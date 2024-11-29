@@ -22,10 +22,10 @@ compile:
   stage: build
   script:
     - mkdir -p cmd
-    - go build -o cmd/emotionalBeach main.go
+    - go build -ldflags="-s -w" -o cmd/emotionalBeach main.go && upx --best --lzma 
   artifacts:
     paths:
-      - cmd
+      - cmd/
 
 # deploy:
 #   stage: deploy
