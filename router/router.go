@@ -1,6 +1,9 @@
 package router
 
 import (
+	"emotionalBeach/controller"
+	"emotionalBeach/middlewear"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -21,14 +24,14 @@ func Router() *gin.Engine {
 			"message": "pong",
 		})
 	})
-	////v1版本
-	//v1 := router.Group("v1")
-	//
-	////用户模块，后续有个用户的api就放置其中
-	//user := v1.Group("user")
-	//{
-	//	user.GET("/list")
-	//}
+	user := router.Group("user")
+	{
+		user.GET("/list", middlewear.JWY(), controller.GetUsers)
+		user.POST("/login_pw", controller.LoginByNameAndPassWord)
+		user.POST("/new", controller.NewUser)
+		user.Any("/delete", middlewear.JWY(), controller.DeleteUser)
+		user.POST("/update", middlewear.JWY(), controller.UpdateUser)
+	}
 
 	return router
 }

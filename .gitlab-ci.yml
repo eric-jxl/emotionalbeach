@@ -22,7 +22,7 @@ compile:
   stage: build
   script:
     - mkdir -p cmd
-    - go build -o emotionalBeach main.go
+    - go build -o cmd/emotionalBeach main.go
   artifacts:
     paths:
       - cmd
