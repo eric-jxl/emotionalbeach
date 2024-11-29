@@ -21,7 +21,7 @@ compile:
   stage: build
   before_script:
     - mkdir -p cmd
-    - apt update && apt install upx
+    - apt update && apt install upx-ucl
   script:
     - go build -ldflags="-s -w" -o cmd/emotionalBeach main.go && upx --best --lzma 
     - tar -czvf emotionalBeach.tar.gz -C cmd . 
