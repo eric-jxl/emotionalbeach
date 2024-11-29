@@ -31,7 +31,7 @@ type UserBasic struct {
 	PassWord      string
 	Avatar        string
 	Gender        string `gorm:"column:gender;default:male;type:varchar(6) comment:'male表示男，female表示女'"` // gorm为数据库字段约束
-	Phone         string `gorm:"unique;not null" valid:"matches(^1[3-9]{1}\\d{9}$)"`                           //valid为条件约束
+	Phone         string `gorm:"unique;not null" valid:"matches(^1[3-9]{1}\\d{9}$)"`                     //valid为条件约束
 	Email         string `valid:"email"`
 	Identity      string
 	ClientIp      string `valid:"ipv4"`
