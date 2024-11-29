@@ -10,7 +10,6 @@ image: golang:latest
 
 stages:
   - build
-  - deploy
 
 format:
   stage: build
@@ -20,12 +19,16 @@ format:
 
 compile:
   stage: build
-  script:
+  before_script:
     - mkdir -p cmd
+    - apt update && apt install upx
+  script:
     - go build -ldflags="-s -w" -o cmd/emotionalBeach main.go && upx --best --lzma 
+    - tar -czvf emotionalBeach.tar.gz -C cmd . 
   artifacts:
     paths:
-      - cmd/
+      - cmd/emotionalBeach
+      - emotionalBeach.tar.gz
 
 # deploy:
 #   stage: deploy
