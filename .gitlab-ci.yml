@@ -11,17 +11,14 @@ image: golang:latest
 stages:
   - build
 
-format:
-  stage: build
-  script:
-    - go fmt $(go list ./... | grep -v /vendor/)
-    - go vet $(go list ./... | grep -v /vendor/)
 
 compile:
   stage: build
   before_script:
+    - go fmt $(go list ./... | grep -v /vendor/)
+    - go vet $(go list ./... | grep -v /vendor/)
     - mkdir -p cmd
-    - apt update && apt install upx-ucl
+    - sudo apt-get update && sudo apt install upx-ucl
   script:
     - go build -ldflags="-s -w" -o cmd/emotionalBeach main.go && upx --best --lzma 
     - tar -czvf emotionalBeach.tar.gz -C cmd . 
