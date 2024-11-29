@@ -1,0 +1,6 @@
+# 用户接口
+/user/list
+/user/login_pw
+/user/new
+/user/delete
+/user/update
