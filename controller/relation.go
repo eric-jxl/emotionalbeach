@@ -72,10 +72,8 @@ func AddFriendByName(ctx *gin.Context) {
 			return
 		}
 	}
-	ctx.JSON(200, gin.H{
-		"code":    0, //  0成功   -1失败
-		"message": "添加好友成功",
-	})
+	models.Success(ctx, gin.H{"msg": "添加好友成功"})
+
 }
 
 func HandleErr(code int, ctx *gin.Context, err error) {
