@@ -10,22 +10,21 @@ image: golang:latest
 
 stages:
   - build
-  - deploy
 
-format:
-  stage: build
-  script:
-    - go fmt $(go list ./... | grep -v /vendor/)
-    - go vet $(go list ./... | grep -v /vendor/)
 
 compile:
   stage: build
-  script:
+  before_script:
+    - go fmt $(go list ./... | grep -v /vendor/)
+    - go vet $(go list ./... | grep -v /vendor/)
     - mkdir -p cmd
-    - go build -o cmd/emotionalBeach main.go
+  script:
+    - go build -ldflags="-s -w" -o cmd/emotionalBeach main.go
+    - tar -czvf emotionalBeach.tar.gz -C cmd . 
   artifacts:
     paths:
-      - cmd
+      - cmd/emotionalBeach
+      - emotionalBeach.tar.gz
 
 # deploy:
 #   stage: deploy
