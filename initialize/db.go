@@ -17,12 +17,7 @@ import (
 )
 
 func InitDB() {
-	pwd, e := os.Getwd()
-	if e != nil {
-		zap.S().Error(e.Error())
-	}
-	envPath := fmt.Sprintf("%s/config/.env", pwd)
-	errs := godotenv.Load(envPath)
+	errs := godotenv.Load("/Users/eric/go/src/emotionalBeach/config/.env")
 	if errs != nil {
 		log.Fatalf("Error loading .env file: %v", errs)
 	}
@@ -53,7 +48,8 @@ func InitDB() {
 	if err != nil {
 		zap.S().Error(err.Error())
 	}
-	dbErr := global.DB.AutoMigrate(&models.UserBasic{})
+	dbErr := global.DB.AutoMigrate(&models.UserBasic{}, models.Relation{})
+	zap.S().Info("数据库自动迁移...")
 	if dbErr != nil {
 		return
 	}

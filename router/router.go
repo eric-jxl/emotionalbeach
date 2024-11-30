@@ -24,13 +24,24 @@ func Router() *gin.Engine {
 			"message": "pong",
 		})
 	})
-	user := router.Group("user")
+	router.POST("/login", controller.LoginByNameAndPassWord)
+	router.POST("/register", controller.NewUser)
+
+	v1 := router.Group("v1")
+	//用户接口
+	user := v1.Group("user").Use(middlewear.JWY())
+
 	{
-		user.GET("/list", middlewear.JWY(), controller.GetUsers)
-		user.POST("/login_pw", controller.LoginByNameAndPassWord)
-		user.POST("/new", controller.NewUser)
-		user.Any("/delete", middlewear.JWY(), controller.DeleteUser)
-		user.POST("/update", middlewear.JWY(), controller.UpdateUser)
+		user.GET("/list", controller.GetUsers)
+		user.Any("/delete", controller.DeleteUser)
+		user.POST("/update", controller.UpdateUser)
+	}
+
+	//好友关系
+	relation := v1.Group("relation").Use(middlewear.JWY())
+	{
+		relation.POST("/list", controller.FriendList)
+		relation.POST("/add", controller.AddFriendByName)
 	}
 
 	return router

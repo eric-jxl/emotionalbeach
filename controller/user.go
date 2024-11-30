@@ -29,28 +29,19 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	password := ctx.PostForm("password")
 	data, err := dao.FindUserByName(name)
 	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code":    -1, //0 表示成功， -1 表示失败
-			"message": "登录失败",
-		})
+		models.Error(ctx, http.StatusForbidden, "登录失败")
 		return
 	}
 
 	if data.Name == "" {
-		ctx.JSON(200, gin.H{
-			"code":    -1,
-			"message": "用户名不存在",
-		})
+		models.Error(ctx, http.StatusNotFound, "用户名不存在")
 		return
 	}
 
 	//由于数据库密码保存是使用md5密文的， 所以验证密码时，是将密码再次加密，然后进行对比，后期会讲解md:common.CheckPassWord
 	ok := common.CheckPassWord(password, data.Salt, data.PassWord)
 	if !ok {
-		ctx.JSON(200, gin.H{
-			"code":    -1,
-			"message": "密码错误",
-		})
+		models.Error(ctx, http.StatusUnauthorized, "密码错误")
 		return
 	}
 
@@ -60,16 +51,15 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 
 	//这里使用jwt做权限认证，后面将会介绍
-	token, err := middlewear.GenerateToken(Rsp.ID, "yk")
+	token, err := middlewear.GenerateToken(Rsp.ID, Rsp.Name)
 	if err != nil {
 		zap.S().Info("生成token失败", err)
 		return
 	}
 	models.Success(ctx, gin.H{
-		"code":    0,
 		"message": "登录成功",
-		"tokens":  token,
 		"userId":  Rsp.ID,
+		"token":   token,
 	})
 }
 
@@ -77,34 +67,37 @@ func NewUser(ctx *gin.Context) {
 	user := models.UserBasic{}
 	user.Name = ctx.Request.FormValue("name")
 	password := ctx.Request.FormValue("password")
-	repassword := ctx.Request.FormValue("identity")
+	repassword := ctx.Request.FormValue("repeat_password")
+	phone := ctx.Request.FormValue("phone")
 
 	if user.Name == "" || password == "" || repassword == "" {
-		ctx.JSON(200, gin.H{
-			"code":    -1, //  0成功   -1失败
-			"message": "用户名或密码不能为空！",
-			"data":    user,
-		})
+		models.Error(ctx, http.StatusUnauthorized, "用户名或密码不能为空")
 		return
 	}
 
 	//查询用户是否存在
 	_, err := dao.FindUser(user.Name)
 	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code":    -1,
-			"message": "该用户已注册",
-			"data":    user,
-		})
+		models.Error(ctx, http.StatusUnauthorized, "该用户已注册")
 		return
 	}
 
 	if password != repassword {
-		ctx.JSON(200, gin.H{
-			"code":    -1, //  0成功   -1失败
-			"message": "两次密码不一致！",
-			"data":    user,
-		})
+		models.Error(ctx, http.StatusUnauthorized, "两次密码不一致")
+		return
+	}
+
+	if phone == "" {
+		models.Error(ctx, http.StatusUnauthorized, "手机号不能为空!")
+		return
+	}
+	if len(phone) != 11 {
+		models.Error(ctx, http.StatusUnauthorized, "手机号必须为11位!")
+		return
+	}
+
+	if !common.IsValidPhoneNumber(phone) {
+		models.Error(ctx, http.StatusForbidden, "手机号非法")
 		return
 	}
 
@@ -118,9 +111,9 @@ func NewUser(ctx *gin.Context) {
 	user.LoginTime = &t
 	user.LoginOutTime = &t
 	user.HeartBeatTime = &t
-	dao.CreateUser(user)
-	ctx.JSON(200, gin.H{
-		"code":    0, //  0成功   -1失败
+	user.Phone = phone
+	_, _ = dao.CreateUser(user)
+	models.Success(ctx, gin.H{
 		"message": "新增用户成功！",
 		"data":    user,
 	})

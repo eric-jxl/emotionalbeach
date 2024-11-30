@@ -1,9 +1,14 @@
 package global
 
 import (
+	"emotionalBeach/config"
+
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 var (
-	DB *gorm.DB
+	ServiceConfig *config.ServiceConfig
+	DB            *gorm.DB
+	RedisDB       *redis.Client
 )
