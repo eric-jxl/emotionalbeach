@@ -16,7 +16,6 @@ import (
 // @host localhost:8080
 // @BasePath /api/v1
 func Router() *gin.Engine {
-	//初始化路由
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/ping", func(c *gin.Context) {

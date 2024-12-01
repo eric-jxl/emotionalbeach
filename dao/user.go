@@ -13,7 +13,7 @@ import (
 
 func GetUserList() ([]models.UserBasic, error) {
 	var list []models.UserBasic
-	if tx := global.DB.Find(&list); tx.RowsAffected == 0 {
+	if tx := global.DB.Order("id").Find(&list); tx.RowsAffected == 0 {
 		return nil, errors.New("获取用户列表失败")
 	}
 	return list, nil
@@ -24,7 +24,7 @@ func GetUserList() ([]models.UserBasic, error) {
 // FindUserByNameAndPwd 昵称和密码查询
 func FindUserByNameAndPwd(name string, password string) (*models.UserBasic, error) {
 	user := models.UserBasic{}
-	if tx := global.DB.Where("name = ? and pass_word=?", name, password).First(&user); tx.RowsAffected == 0 {
+	if tx := global.DB.Where("name = ? and password=?", name, password).First(&user); tx.RowsAffected == 0 {
 		return nil, errors.New("未查询到记录")
 	}
 	//token加密
@@ -89,7 +89,7 @@ func CreateUser(user models.UserBasic) (*models.UserBasic, error) {
 func UpdateUser(user models.UserBasic) (*models.UserBasic, error) {
 	tx := global.DB.Model(&user).Updates(models.UserBasic{
 		Name:     user.Name,
-		PassWord: user.PassWord,
+		Password: user.Password,
 		Gender:   user.Gender,
 		Phone:    user.Phone,
 		Email:    user.Email,

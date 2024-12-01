@@ -11,9 +11,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
+
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
 
 func GetUsers(ctx *gin.Context) {
 	list, err := dao.GetUserList()
@@ -39,13 +44,13 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 
 	//由于数据库密码保存是使用md5密文的， 所以验证密码时，是将密码再次加密，然后进行对比，后期会讲解md:common.CheckPassWord
-	ok := common.CheckPassWord(password, data.Salt, data.PassWord)
+	ok := common.CheckPassWord(password, data.Salt, data.Password)
 	if !ok {
 		models.Error(ctx, http.StatusUnauthorized, "密码错误")
 		return
 	}
 
-	Rsp, err := dao.FindUserByNameAndPwd(name, data.PassWord)
+	Rsp, err := dao.FindUserByNameAndPwd(name, data.Password)
 	if err != nil {
 		zap.S().Info("登录失败", err)
 	}
@@ -69,6 +74,7 @@ func NewUser(ctx *gin.Context) {
 	password := ctx.Request.FormValue("password")
 	repassword := ctx.Request.FormValue("repeat_password")
 	phone := ctx.Request.FormValue("phone")
+	email := ctx.Request.FormValue("email")
 
 	if user.Name == "" || password == "" || repassword == "" {
 		models.Error(ctx, http.StatusUnauthorized, "用户名或密码不能为空")
@@ -105,13 +111,16 @@ func NewUser(ctx *gin.Context) {
 	salt := fmt.Sprintf("%d", rand.Int31())
 
 	//加密密码
-	user.PassWord = common.SaltPassWord(password, salt)
+	user.Password = common.SaltPassWord(password, salt)
 	user.Salt = salt
 	t := time.Now()
 	user.LoginTime = &t
 	user.LoginOutTime = &t
 	user.HeartBeatTime = &t
 	user.Phone = phone
+	if email != "" {
+		user.Email = email
+	}
 	_, _ = dao.CreateUser(user)
 	models.Success(ctx, gin.H{
 		"message": "新增用户成功！",
@@ -132,7 +141,7 @@ func UpdateUser(ctx *gin.Context) {
 	}
 	user.ID = uint(id)
 	Name := ctx.Request.FormValue("name")
-	PassWord := ctx.Request.FormValue("password")
+	Password := ctx.Request.FormValue("password")
 	Email := ctx.Request.FormValue("email")
 	Phone := ctx.Request.FormValue("phone")
 	avatar := ctx.Request.FormValue("icon")
@@ -140,10 +149,10 @@ func UpdateUser(ctx *gin.Context) {
 	if Name != "" {
 		user.Name = Name
 	}
-	if PassWord != "" {
+	if Password != "" {
 		salt := fmt.Sprintf("%d", rand.Int31())
 		user.Salt = salt
-		user.PassWord = common.SaltPassWord(PassWord, salt)
+		user.Password = common.SaltPassWord(Password, salt)
 	}
 	if Email != "" {
 		user.Email = Email
@@ -158,15 +167,15 @@ func UpdateUser(ctx *gin.Context) {
 		user.Gender = gender
 	}
 
-	//_, err = govalidator.ValidateStruct(user)
-	//if err != nil {
-	//	zap.S().Info("参数不匹配", err)
-	//	ctx.JSON(http.StatusBadRequest, gin.H{
-	//		"code":    -1, //  0成功   -1失败
-	//		"message": "参数不匹配",
-	//	})
-	//	return
-	//}
+	_, err = govalidator.ValidateStruct(user)
+	if err != nil {
+		zap.S().Info("参数不匹配", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code":    -1, //  0成功   -1失败
+			"message": "参数不匹配",
+		})
+		return
+	}
 
 	Rsp, err := dao.UpdateUser(user)
 	if err != nil {

@@ -19,7 +19,7 @@ type DatetimeModel struct {
 type UserBasic struct {
 	BaseModel
 	Name          string `gorm:"column:name;type:varchar(255);comment:名称"`
-	PassWord      string
+	Password      string `gorm:"column:password"`
 	Avatar        string `gorm:"comment:头像"`
 	Gender        string `gorm:"column:gender;default:male;type:varchar(6); comment:male表示男，female表示女"`                                                                  // gorm为数据库字段约束
 	Phone         string `gorm:"type:varchar(64);index; unique;comment:手机号;not null" valid:"matches(^1[3-9]{1}\\d{9}$)" validate:"required,numeric,len=11,startswith=1"` //valid为条件约束

@@ -14,4 +14,5 @@ func InitLogger() {
 	}
 	//使用全局logger
 	zap.ReplaceGlobals(logger)
+	zap.S().Info("初始化Zap日志")
 }
