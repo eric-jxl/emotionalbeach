@@ -16,8 +16,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func InitDB() {
-	errs := godotenv.Load("/Users/eric/go/src/emotionalBeach/config/.env")
+func InitDB(dbPath string) {
+	errs := godotenv.Load(dbPath)
 	if errs != nil {
 		log.Fatalf("Error loading .env file: %v", errs)
 	}
