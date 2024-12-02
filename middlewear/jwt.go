@@ -17,8 +17,6 @@ var (
 	jwtSecret    = []byte("emotionBeach")
 )
 
-// 指定加密密钥
-
 // Claims 是一些实体（通常指的用户）的状态和额外的元数据
 type Claims struct {
 	UserID uint `json:"userId"`
@@ -29,7 +27,7 @@ type Claims struct {
 func GenerateToken(userId uint, iss string) (string, error) {
 	// 设置token有效时间
 	nowTime := time.Now()
-	expireTime := nowTime.Add(48 * 30 * time.Hour)
+	expireTime := nowTime.Add(14 * 24 * time.Hour) // 过期时间为14天
 
 	claims := Claims{
 		UserID: userId,
@@ -49,11 +47,16 @@ func GenerateToken(userId uint, iss string) (string, error) {
 
 func JWY() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.PostForm("token")
-		user := c.Query("userId")
+		token := c.Request.Header.Get("token")
+		user := c.Request.Header.Get("uid")
 		userId, err := strconv.Atoi(user)
+		if token == "" || user == "" {
+			models.Error(c, http.StatusUnauthorized, "授权信息和用户ID不能为空!")
+			c.Abort()
+			return
+		}
 		if err != nil {
-			models.Error(c, http.StatusUnauthorized, "您userId不合法")
+			models.Error(c, http.StatusUnauthorized, "您uid不合法")
 			c.Abort()
 			return
 		}
@@ -75,7 +78,7 @@ func JWY() gin.HandlerFunc {
 			}
 
 			if claims.UserID != uint(userId) {
-				models.Error(c, http.StatusUnauthorized, "您的登录不合法")
+				models.Error(c, http.StatusUnauthorized, "您的登录身份不合法")
 				c.Abort()
 				return
 			}

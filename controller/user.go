@@ -77,7 +77,7 @@ func NewUser(ctx *gin.Context) {
 	email := ctx.Request.FormValue("email")
 
 	if user.Name == "" || password == "" || repassword == "" {
-		models.Error(ctx, http.StatusUnauthorized, "用户名或密码不能为空")
+		models.Error(ctx, http.StatusUnauthorized, "用户名或密码或确认密码不能为空！")
 		return
 	}
 
