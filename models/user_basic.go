@@ -36,8 +36,8 @@ type UserBasic struct {
 	DatetimeModel
 }
 
-// UserTableName 指定表的名称
-func (table *UserBasic) UserTableName() string {
+// TableName UserTableName 指定表的名称
+func (table *UserBasic) TableName() string {
 	return "user_basic"
 }
 
@@ -50,6 +50,6 @@ type Relation struct {
 	DatetimeModel
 }
 
-func (r *Relation) RelTableName() string {
+func (r *Relation) TableName() string {
 	return "relation"
 }

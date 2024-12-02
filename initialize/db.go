@@ -41,6 +41,7 @@ func InitDB() {
 	//将获取到的连接赋值到global.DB
 	config := &gorm.Config{}
 	if gin.Mode() == gin.DebugMode {
+		config.DisableForeignKeyConstraintWhenMigrating = true
 		config.Logger = newLogger
 	}
 	var err error
