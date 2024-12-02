@@ -21,7 +21,7 @@ func init() {
 // @version 1.0
 // @description 使用go v1.22.9 + gin v1.10
 
-// @contact.name Eric
+// @contact.name Eric Jiang
 // @contact.url http://www.swagger.io/support
 // @contact.email support@swagger.io
 

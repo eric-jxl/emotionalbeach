@@ -33,6 +33,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Name",
                         "name": "name",
                         "in": "formData",
@@ -82,6 +89,13 @@
                 ],
                 "summary": "创建用户",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Name",
@@ -152,6 +166,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "ID",
                         "name": "id",
                         "in": "query"
@@ -209,6 +230,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "ID",
                         "name": "id",
                         "in": "formData",
@@ -252,6 +280,15 @@
                     "用户"
                 ],
                 "summary": "获取所有用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "请求成功",
@@ -284,6 +321,13 @@
                 ],
                 "summary": "更新用户信息",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "ID",

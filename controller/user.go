@@ -25,6 +25,7 @@ func init() {
 // @Description 批量获取所有用户信息
 // @Tags 用户
 // @Produce json
+// @Param Uid header string true "用户身份"
 // @Success 200 {object} models.Resp "请求成功"
 // @Failure 500 {object} models.Resp "请求错误"
 // @Security ApiKeyAuth
@@ -58,6 +59,7 @@ func findUser(idStr, email, phone string) (*models.UserBasic, error) {
 // @Summary 获取所有用户
 // @Description 批量获取所有用户信息
 // @Tags 用户
+// @Param Uid header string true "用户身份"
 // @Param id query string false "ID"
 // @Param phone query string false "手机号"
 // @Param email query string false "Email"
@@ -89,6 +91,7 @@ func GetAppointUser(ctx *gin.Context) {
 // @Tags 注册登陆
 // @Accept multipart/form-data
 // @Produce application/json
+// @Param Uid header string true "用户身份"
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
 // @Success 200 {object} models.Resp "请求成功"
@@ -140,6 +143,7 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 // @Tags 注册登陆
 // @Accept multipart/form-data
 // @Produce application/json
+// @Param Uid header string true "用户身份"
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
 // @Param repeat_password formData string true "repeat_password"
@@ -212,6 +216,7 @@ func NewUser(ctx *gin.Context) {
 // @Summary 更新用户信息
 // @Description 更新用户信息
 // @Tags 用户
+// @Param Uid header string true "用户身份"
 // @Param id formData string true "ID"
 // @Param name formData string false "用户名"
 // @Param password formData string false "密码"
@@ -290,6 +295,7 @@ func UpdateUser(ctx *gin.Context) {
 // @Summary 更新用户信息
 // @Description 更新用户信息
 // @Tags 用户
+// @Param Uid header string true "用户身份"
 // @Param id formData string true "ID"
 // @Produce json
 // @Success 200 {object} models.Resp "请求成功"

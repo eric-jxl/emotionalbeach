@@ -48,7 +48,7 @@ func GenerateToken(userId uint, iss string) (string, error) {
 func JWY() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
-		user := c.Query("uid")
+		user := c.GetHeader("Uid")
 		userId, err := strconv.Atoi(user)
 		if token == "" || user == "" {
 			models.Error(c, http.StatusUnauthorized, "授权信息和用户ID不能为空!")
