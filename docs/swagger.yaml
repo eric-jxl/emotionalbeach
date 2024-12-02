@@ -1,0 +1,92 @@
+basePath: /
+definitions:
+  models.Resp:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+host: https://lcygetname.cn
+info:
+  contact:
+    email: support@swagger.io
+    name: Eric
+    url: http://www.swagger.io/support
+  description: 使用go v1.22.9 + gin v1.10
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: 情感沙滩API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 根据用户名、密码获取授权码
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+      summary: 登陆获取Token
+      tags:
+      - 注册登陆
+  /register:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 根据名称、密码、二次密码、手机号、邮箱(可选)注册
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: repeat_password
+        in: formData
+        name: repeat_password
+        required: true
+        type: string
+      - description: Phone
+        in: formData
+        name: phone
+        required: true
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+      summary: 创建用户
+      tags:
+      - 注册登陆
+swagger: "2.0"

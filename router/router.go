@@ -2,6 +2,7 @@ package router
 
 import (
 	"emotionalBeach/controller"
+	_ "emotionalBeach/docs"
 	"emotionalBeach/middlewear"
 
 	"github.com/gin-gonic/gin"
@@ -9,12 +10,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// Router
-// @title Gin Swagger Example API
-// @version 1.0
-// @description This is a sample server.
-// @host localhost:8080
-// @BasePath /api/v1
 func Router() *gin.Engine {
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -26,7 +21,7 @@ func Router() *gin.Engine {
 	router.POST("/login", controller.LoginByNameAndPassWord)
 	router.POST("/register", controller.NewUser)
 
-	v1 := router.Group("v1")
+	v1 := router.Group("/v1")
 	//用户接口
 	user := v1.Group("user").Use(middlewear.JWY())
 

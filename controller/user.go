@@ -29,6 +29,18 @@ func GetUsers(ctx *gin.Context) {
 	models.Success(ctx, list)
 }
 
+// LoginByNameAndPassWord 登陆
+// @Summary 登陆获取Token
+// @Description 根据用户名、密码获取授权码
+// @Tags 注册登陆
+// @Accept multipart/form-data
+// @Produce application/json
+// @Param name formData string true "Name"
+// @Param password formData string true "Password"
+// @Success 200 {object} models.Resp "请求成功"
+// @Failed 401 {object} models.Resp "请求失败
+// @Failed 502 {object} models.Resp "服务请求超时
+// @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
 	name := ctx.PostForm("name")
 	password := ctx.PostForm("password")
@@ -68,6 +80,20 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	})
 }
 
+// NewUser 登陆注册
+// @Summary 创建用户
+// @Description 根据名称、密码、二次密码、手机号、邮箱(可选)注册
+// @Tags 注册登陆
+// @Accept multipart/form-data
+// @Produce application/json
+// @Param name formData string true "Name"
+// @Param password formData string true "Password"
+// @Param repeat_password formData string true "repeat_password"
+// @Param phone formData string true "Phone"
+// @Param email formData string true "Email"
+// @Success 200 {object} models.Resp "请求成功"
+// @Failed  401 {object} models.Resp "请求失败"
+// @Router /register [post]
 func NewUser(ctx *gin.Context) {
 	user := models.UserBasic{}
 	user.Name = ctx.Request.FormValue("name")
