@@ -20,6 +20,15 @@ func init() {
 	govalidator.SetFieldsRequiredByDefault(true)
 }
 
+// GetUsers
+// @Summary 获取所有用户
+// @Description 批量获取所有用户信息
+// @Tags 用户
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 500 {object} models.Resp "请求错误"
+// @Security ApiKeyAuth
+// @Router /v1/user/list [get]
 func GetUsers(ctx *gin.Context) {
 	list, err := dao.GetUserList()
 	if err != nil {
@@ -27,6 +36,51 @@ func GetUsers(ctx *gin.Context) {
 		return
 	}
 	models.Success(ctx, list)
+}
+
+// findUser 根据给定的条件查找用户
+func findUser(idStr, email, phone string) (*models.UserBasic, error) {
+	if idStr != "" {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return nil, fmt.Errorf("非法用户ID: %v", err)
+		}
+		return dao.FindUserID(uint(id))
+	} else if email != "" {
+		return dao.FindUerByEmail(email)
+	} else if phone != "" {
+		return dao.FindUserByPhone(phone)
+	}
+	return nil, fmt.Errorf("至少需要一个参数（id、电子邮件或电话）")
+}
+
+// GetAppointUser
+// @Summary 获取所有用户
+// @Description 批量获取所有用户信息
+// @Tags 用户
+// @Param id query string false "ID"
+// @Param phone query string false "手机号"
+// @Param email query string false "Email"
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 400 {object} models.Resp "请求错误
+// @Failure 500 {object} models.Resp "内部错误"
+// @Security ApiKeyAuth
+// @Router /v1/user/condition [get]
+func GetAppointUser(ctx *gin.Context) {
+	phone := ctx.Query("phone")
+	email := ctx.Query("email")
+	id := ctx.Query("id")
+	if id == "" && email == "" && phone == "" {
+		models.Error(ctx, http.StatusBadRequest, "至少需要一个参数（id、电子邮件或电话）")
+		return
+	}
+	userStruct, err := findUser(id, email, phone)
+	if err != nil {
+		models.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+	models.Success(ctx, userStruct)
 }
 
 // LoginByNameAndPassWord 登陆
@@ -38,8 +92,8 @@ func GetUsers(ctx *gin.Context) {
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
 // @Success 200 {object} models.Resp "请求成功"
-// @Failed 401 {object} models.Resp "请求失败
-// @Failed 502 {object} models.Resp "服务请求超时
+// @Failure 401 {object} models.Resp "请求失败
+// @Failure 502 {object} models.Resp "服务请求超时
 // @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
 	name := ctx.PostForm("name")
@@ -90,9 +144,9 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 // @Param password formData string true "Password"
 // @Param repeat_password formData string true "repeat_password"
 // @Param phone formData string true "Phone"
-// @Param email formData string true "Email"
+// @Param email formData string true  "EMAIL"
 // @Success 200 {object} models.Resp "请求成功"
-// @Failed  401 {object} models.Resp "请求失败"
+// @Failure  401 {object} models.Resp "请求失败"
 // @Router /register [post]
 func NewUser(ctx *gin.Context) {
 	user := models.UserBasic{}
@@ -154,6 +208,23 @@ func NewUser(ctx *gin.Context) {
 	})
 }
 
+// UpdateUser
+// @Summary 更新用户信息
+// @Description 更新用户信息
+// @Tags 用户
+// @Param id formData string true "ID"
+// @Param name formData string false "用户名"
+// @Param password formData string false "密码"
+// @Param phone formData string false "手机号"
+// @Param email formData string false "Email"
+// @Param avatar formData string false "avatar"
+// @Param gender formData string false "gender"
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 400 {object} models.Resp "请求错误
+// @Failure 500 {object} models.Resp "内部错误"
+// @Security ApiKeyAuth
+// @Router /v1/user/update [post]
 func UpdateUser(ctx *gin.Context) {
 	user := models.UserBasic{}
 	id, err := strconv.Atoi(ctx.Request.FormValue("id"))
@@ -166,12 +237,12 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 	user.ID = uint(id)
-	Name := ctx.Request.FormValue("name")
-	Password := ctx.Request.FormValue("password")
-	Email := ctx.Request.FormValue("email")
-	Phone := ctx.Request.FormValue("phone")
-	avatar := ctx.Request.FormValue("icon")
-	gender := ctx.Request.FormValue("gender")
+	Name := ctx.PostForm("name")
+	Password := ctx.PostForm("password")
+	Email := ctx.PostForm("email")
+	Phone := ctx.PostForm("phone")
+	avatar := ctx.PostForm("avatar")
+	gender := ctx.PostForm("gender")
 	if Name != "" {
 		user.Name = Name
 	}
@@ -215,6 +286,17 @@ func UpdateUser(ctx *gin.Context) {
 	})
 }
 
+// DeleteUser
+// @Summary 更新用户信息
+// @Description 更新用户信息
+// @Tags 用户
+// @Param id formData string true "ID"
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 405 {object} models.Resp "不支持的请求方式“
+// @Failure 500 {object} models.Resp "内部错误"
+// @Security ApiKeyAuth
+// @Router /v1/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
 	zap.S().Info(ctx.Request.URL, ctx.Request.Method)
 	if ctx.Request.Method != http.MethodDelete {
@@ -222,7 +304,7 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 	user := models.UserBasic{}
-	id, err := strconv.Atoi(ctx.Request.FormValue("id"))
+	id, err := strconv.Atoi(ctx.PostForm("id"))
 	if err != nil {
 		zap.S().Info("类型转换失败", err)
 		models.Error(ctx, http.StatusInternalServerError, "注销账号失败")

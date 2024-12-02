@@ -20,7 +20,6 @@ func init() {
 // @title 情感沙滩API
 // @version 1.0
 // @description 使用go v1.22.9 + gin v1.10
-// @termsOfService http://swagger.io/terms/
 
 // @contact.name Eric
 // @contact.url http://www.swagger.io/support
@@ -28,9 +27,11 @@ func init() {
 
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-
-// @host https://lcygetname.cn
+// @host lcygetname.cn
 // @BasePath /
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	//初始化日志

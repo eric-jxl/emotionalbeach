@@ -8,7 +8,7 @@ definitions:
       message:
         type: string
     type: object
-host: https://lcygetname.cn
+host: lcygetname.cn
 info:
   contact:
     email: support@swagger.io
@@ -18,7 +18,6 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
   title: 情感沙滩API
   version: "1.0"
 paths:
@@ -43,6 +42,14 @@ paths:
       responses:
         "200":
           description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "401":
+          description: 请求失败
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "502":
+          description: 服务请求超时
           schema:
             $ref: '#/definitions/models.Resp'
       summary: 登陆获取Token
@@ -74,7 +81,7 @@ paths:
         name: phone
         required: true
         type: string
-      - description: Email
+      - description: EMAIL
         in: formData
         name: email
         required: true
@@ -86,7 +93,153 @@ paths:
           description: 请求成功
           schema:
             $ref: '#/definitions/models.Resp'
+        "401":
+          description: 请求失败
+          schema:
+            $ref: '#/definitions/models.Resp'
       summary: 创建用户
       tags:
       - 注册登陆
+  /v1/user/condition:
+    get:
+      description: 批量获取所有用户信息
+      parameters:
+      - description: ID
+        in: query
+        name: id
+        type: string
+      - description: 手机号
+        in: query
+        name: phone
+        type: string
+      - description: Email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有用户
+      tags:
+      - 用户
+  /v1/user/delete:
+    delete:
+      description: 更新用户信息
+      parameters:
+      - description: ID
+        in: formData
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "405":
+          description: 不支持的请求方式“
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户信息
+      tags:
+      - 用户
+  /v1/user/list:
+    get:
+      description: 批量获取所有用户信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "500":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有用户
+      tags:
+      - 用户
+  /v1/user/update:
+    post:
+      description: 更新用户信息
+      parameters:
+      - description: ID
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: 用户名
+        in: formData
+        name: name
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        type: string
+      - description: 手机号
+        in: formData
+        name: phone
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        type: string
+      - description: avatar
+        in: formData
+        name: avatar
+        type: string
+      - description: gender
+        in: formData
+        name: gender
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/models.Resp'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户信息
+      tags:
+      - 用户
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

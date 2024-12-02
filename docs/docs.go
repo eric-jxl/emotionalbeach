@@ -9,7 +9,6 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "Eric",
             "url": "http://www.swagger.io/support",
@@ -56,6 +55,18 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "401": {
+                        "description": "请求失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "502": {
+                        "description": "服务请求超时",
                         "schema": {
                             "$ref": "#/definitions/models.Resp"
                         }
@@ -107,7 +118,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Email",
+                        "description": "EMAIL",
                         "name": "email",
                         "in": "formData",
                         "required": true
@@ -116,6 +127,228 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "401": {
+                        "description": "请求失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/condition": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "批量获取所有用户信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "获取所有用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "手机号",
+                        "name": "phone",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新用户信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "更新用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "405": {
+                        "description": "不支持的请求方式“",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "批量获取所有用户信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "获取所有用户",
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/update": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新用户信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "更新用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "密码",
+                        "name": "password",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "手机号",
+                        "name": "phone",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "avatar",
+                        "name": "avatar",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "gender",
+                        "name": "gender",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
                         "schema": {
                             "$ref": "#/definitions/models.Resp"
                         }
@@ -137,13 +370,20 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "https://lcygetname.cn",
+	Host:             "lcygetname.cn",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "情感沙滩API",
