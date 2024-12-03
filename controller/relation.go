@@ -3,6 +3,7 @@ package controller
 import (
 	"emotionalBeach/dao"
 	"emotionalBeach/models"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -19,15 +20,24 @@ type user struct {
 	Identity string
 }
 
+// FriendList GetAppointUser
+// @Summary 获取好友列表
+// @Description 批量获取好友列表信息
+// @Tags 好友关系
+// @Param Uid header uint true "用户身份"
+// @Param userId formData uint true "好友ID"
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 400 {object} models.Resp "请求错误
+// @Failure 500 {object} models.Resp "内部错误"
+// @Security ApiKeyAuth
+// @Router /v1/relation/list [post]
 func FriendList(ctx *gin.Context) {
-	id, _ := strconv.Atoi(ctx.Request.FormValue("userId"))
+	id, _ := strconv.Atoi(ctx.PostForm("userId"))
 	users, err := dao.FriendList(uint(id))
 	if err != nil {
 		zap.S().Info("获取好友列表失败", err)
-		ctx.JSON(200, gin.H{
-			"code":    -1, //  0成功   -1失败
-			"message": "好友为空",
-		})
+		models.Error(ctx, http.StatusNotFound, "好友为空")
 		return
 	}
 
@@ -48,6 +58,17 @@ func FriendList(ctx *gin.Context) {
 }
 
 // AddFriendByName 通过昵称加好友
+// @Summary 通过昵称加好友
+// @Description 通过昵称加好友
+// @Tags 好友关系
+// @Param Uid header uint true "用户身份"
+// @Param userId formData uint false "增加的用户id"
+// @Produce json
+// @Success 200 {object} models.Resp "请求成功"
+// @Failure 400 {object} models.Resp "请求错误
+// @Failure 500 {object} models.Resp "内部错误"
+// @Security ApiKeyAuth
+// @Router /v1/relation/add [post]
 func AddFriendByName(ctx *gin.Context) {
 	user := ctx.PostForm("userId")
 	userId, err := strconv.Atoi(user)

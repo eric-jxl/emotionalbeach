@@ -4,7 +4,7 @@
         "description": "使用go v1.22.9 + gin v1.10",
         "title": "情感沙滩API",
         "contact": {
-            "name": "Eric",
+            "name": "Eric Jiang",
             "url": "http://www.swagger.io/support",
             "email": "support@swagger.io"
         },
@@ -141,6 +141,111 @@
                     },
                     "401": {
                         "description": "请求失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/relation/add": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "通过昵称加好友",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "好友关系"
+                ],
+                "summary": "通过昵称加好友",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "增加的用户id",
+                        "name": "userId",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/relation/list": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "批量获取好友列表信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "好友关系"
+                ],
+                "summary": "获取好友列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "用户身份",
+                        "name": "Uid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "好友ID",
+                        "name": "userId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Resp"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
                         "schema": {
                             "$ref": "#/definitions/models.Resp"
                         }
