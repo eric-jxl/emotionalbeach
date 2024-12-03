@@ -22,8 +22,8 @@ type UserBasic struct {
 	Password      string     `gorm:"column:password;comment:密码"`
 	Role          string     `gorm:"column:role;default:user;type:varchar(128);size:128;comment:superadmin表示超级管理员, admin表示管理员,user表示普通用户"`
 	Avatar        string     `gorm:"comment:头像"`
-	Gender        string     `gorm:"column:gender;default:male;type:varchar(6); comment:male表示男，female表示女"`                                                                  // gorm为数据库字段约束
-	Phone         string     `gorm:"type:varchar(64);index; unique;comment:手机号;not null" valid:"matches(^1[3-9]{1}\\d{9}$)" validate:"required,numeric,len=11,startswith=1"` //valid为条件约束
+	Gender        string     `gorm:"column:gender;default:male;type:varchar(6); comment:male表示男，female表示女"`                  // gorm为数据库字段约束
+	Phone         string     `gorm:"type:varchar(64);index; unique;comment:手机号;not null" valid:"matches(^1[3-9]{1}\\d{9}$)"` //valid为条件约束
 	Email         string     `gorm:"size:255;comment:Email"`
 	Identity      string     `gorm:"column:identity;size:128;comment:密钥"`
 	ClientIp      string     `gorm:"comment:ip地址" valid:"ipv4"`

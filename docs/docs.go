@@ -340,26 +340,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "405": {
-                        "description": "不支持的请求方式“",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/user/list": {
@@ -469,26 +450,7 @@ const docTemplate = `{
                         "in": "formData"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "400": {
-                        "description": "请求错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         }
     },

@@ -223,9 +223,6 @@ func NewUser(ctx *gin.Context) {
 // @Param avatar formData string false "avatar"
 // @Param gender formData string false "gender"
 // @Produce json
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 400 {object} models.Resp "请求错误
-// @Failure 500 {object} models.Resp "内部错误"
 // @Security ApiKeyAuth
 // @Router /v1/user/update [post]
 func UpdateUser(ctx *gin.Context) {
@@ -267,16 +264,6 @@ func UpdateUser(ctx *gin.Context) {
 		user.Gender = gender
 	}
 
-	_, err = govalidator.ValidateStruct(user)
-	if err != nil {
-		zap.S().Info("参数不匹配", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"code":    -1, //  0成功   -1失败
-			"message": "参数不匹配",
-		})
-		return
-	}
-
 	Rsp, err := dao.UpdateUser(user)
 	if err != nil {
 		zap.S().Info("更新用户失败", err)
@@ -296,9 +283,6 @@ func UpdateUser(ctx *gin.Context) {
 // @Param Uid header string true "用户身份"
 // @Param id formData string true "ID"
 // @Produce json
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 405 {object} models.Resp "不支持的请求方式“
-// @Failure 500 {object} models.Resp "内部错误"
 // @Security ApiKeyAuth
 // @Router /v1/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
