@@ -103,8 +103,9 @@ func UpdateUser(user models.UserBasic) (*models.UserBasic, error) {
 	return &user, nil
 }
 
-func DeleteUser(user models.UserBasic) error {
-	if tx := global.DB.Delete(&user); tx.RowsAffected == 0 {
+func DeleteUser(id uint) error {
+	user := models.UserBasic{}
+	if tx := global.DB.Model(&user).Where("id = ?", id).Delete(&user); tx.RowsAffected == 0 {
 		zap.S().Info("删除失败")
 		return errors.New("删除用户失败")
 	}

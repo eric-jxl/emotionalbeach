@@ -333,10 +333,10 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "ID",
                         "name": "id",
-                        "in": "formData",
+                        "in": "query",
                         "required": true
                     }
                 ],

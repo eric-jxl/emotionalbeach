@@ -218,10 +218,10 @@ paths:
         required: true
         type: string
       - description: ID
-        in: formData
+        in: query
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses: {}

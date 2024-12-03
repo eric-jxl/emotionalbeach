@@ -286,18 +286,17 @@ func UpdateUser(ctx *gin.Context) {
 // @Description 更新用户信息
 // @Tags 用户
 // @Param Uid header string true "用户身份"
-// @Param id formData string true "ID"
+// @Param id query uint true "ID"
 // @Produce json
 // @Security ApiKeyAuth
 // @Router /v1/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
-	zap.S().Info(ctx.Request.URL, ctx.Request.Method)
 	if ctx.Request.Method != http.MethodDelete {
 		models.Error(ctx, http.StatusMethodNotAllowed, "Method not allowed, only DELETE is accepted")
 		return
 	}
 	user := models.UserBasic{}
-	idStr := ctx.PostForm("id")
+	idStr := ctx.Query("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		zap.S().Info("类型转换失败", err)
@@ -306,7 +305,7 @@ func DeleteUser(ctx *gin.Context) {
 	}
 
 	user.ID = uint(id)
-	err = dao.DeleteUser(user)
+	err = dao.DeleteUser(uint(id))
 	if err != nil {
 		zap.S().Info("注销用户失败", err)
 		models.Error(ctx, http.StatusInternalServerError, "注销账号失败")
