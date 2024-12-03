@@ -47,7 +47,7 @@ func main() {
 	go func() {
 		routers.Run(":8080")
 	}()
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal,1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	zap.S().Info("Shutdown Server ...")
