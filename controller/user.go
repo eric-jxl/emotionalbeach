@@ -231,7 +231,8 @@ func NewUser(ctx *gin.Context) {
 // @Router /v1/user/update [post]
 func UpdateUser(ctx *gin.Context) {
 	user := models.UserBasic{}
-	id, err := strconv.Atoi(ctx.Request.FormValue("id"))
+	idStr := ctx.PostForm("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		zap.S().Info("类型转换失败", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -296,7 +297,8 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 	user := models.UserBasic{}
-	id, err := strconv.Atoi(ctx.PostForm("id"))
+	idStr := ctx.PostForm("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		zap.S().Info("类型转换失败", err)
 		models.Error(ctx, http.StatusInternalServerError, "注销账号失败")
