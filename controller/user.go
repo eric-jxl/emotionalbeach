@@ -91,7 +91,6 @@ func GetAppointUser(ctx *gin.Context) {
 // @Tags 注册登陆
 // @Accept multipart/form-data
 // @Produce application/json
-// @Param Uid header string true "用户身份"
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
 // @Success 200 {object} models.Resp "请求成功"
@@ -143,7 +142,6 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 // @Tags 注册登陆
 // @Accept multipart/form-data
 // @Produce application/json
-// @Param Uid header string true "用户身份"
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
 // @Param repeat_password formData string true "repeat_password"

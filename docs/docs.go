@@ -39,13 +39,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Name",
                         "name": "name",
                         "in": "formData",
@@ -95,13 +88,6 @@ const docTemplate = `{
                 ],
                 "summary": "创建用户",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Name",

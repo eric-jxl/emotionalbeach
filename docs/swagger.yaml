@@ -27,11 +27,6 @@ paths:
       - multipart/form-data
       description: 根据用户名、密码获取授权码
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       - description: Name
         in: formData
         name: name
@@ -66,11 +61,6 @@ paths:
       - multipart/form-data
       description: 根据名称、密码、二次密码、手机号、邮箱(可选)注册
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       - description: Name
         in: formData
         name: name
