@@ -55,7 +55,7 @@ func InitDB(dbPath string) {
 	}
 	dbConnect, errs := global.DB.DB()
 	if errs != nil {
-		log.Println(errs)
+		log.Fatalf("数据库错误%s\n", errs)
 	}
 	dbConnect.SetMaxIdleConns(10)           // 设置最大空闲连接数
 	dbConnect.SetMaxOpenConns(100)          // 设置最大打开连接数

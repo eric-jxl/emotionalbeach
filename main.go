@@ -4,6 +4,9 @@ import (
 	"emotionalBeach/initialize"
 	"emotionalBeach/router"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -40,9 +43,13 @@ func main() {
 	initialize.InitDB(*filepath)
 	routers := router.Router()
 	routers.Use(cors.Default())
-	zap.L().Info("程序加载中...")
-	err := routers.Run(":8080")
-	if err != nil {
-		return
-	}
+	zap.S().Info("程序加载中...")
+	go func() {
+		routers.Run(":8080")
+	}()
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	zap.S().Info("Shutdown Server ...")
+	zap.S().Info("Server exiting")
 }
