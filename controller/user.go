@@ -203,10 +203,14 @@ func NewUser(ctx *gin.Context) {
 	if email != "" {
 		user.Email = email
 	}
-	_, _ = dao.CreateUser(user)
+	userStruct, errs := dao.CreateUser(user)
+	if errs != nil {
+		models.Error(ctx, http.StatusInternalServerError, errs.Error())
+		return
+	}
 	models.Success(ctx, gin.H{
 		"message": "新增用户成功！",
-		"data":    user,
+		"data":    userStruct,
 	})
 }
 
