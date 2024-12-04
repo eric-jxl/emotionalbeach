@@ -45,9 +45,13 @@ func main() {
 	routers.Use(cors.Default())
 	zap.S().Info("程序加载中...")
 	go func() {
-		routers.Run(":8080")
+		err := routers.Run(":8080")
+		if err != nil {
+			zap.S().Error(err.Error())
+			return
+		}
 	}()
-	quit := make(chan os.Signal,1)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	zap.S().Info("Shutdown Server ...")
