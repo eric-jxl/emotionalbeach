@@ -21,7 +21,7 @@ compile:
     
   script:
     - go build -ldflags="-s -w" -o emotionalBeach main.go
-    - tar -czvf emotionalBeach.tar.gz -C . . 
+    - tar -czvf emotionalBeach.tar.gz -C emotionalBeach . 
   artifacts:
     paths:
       - emotionalBeach
