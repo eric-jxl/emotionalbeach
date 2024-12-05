@@ -52,26 +52,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "401": {
-                        "description": "请求失败",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "502": {
-                        "description": "服务请求超时",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/register": {
@@ -124,20 +105,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "401": {
-                        "description": "请求失败",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/relation/add": {
@@ -170,26 +138,7 @@ const docTemplate = `{
                         "in": "formData"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "400": {
-                        "description": "请求错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/relation/list": {
@@ -223,26 +172,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "400": {
-                        "description": "请求错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/user/condition": {
@@ -287,26 +217,7 @@ const docTemplate = `{
                         "in": "query"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "400": {
-                        "description": "请求错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/user/delete": {
@@ -367,20 +278,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "请求成功",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    },
-                    "500": {
-                        "description": "请求错误",
-                        "schema": {
-                            "$ref": "#/definitions/models.Resp"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/user/update": {
@@ -451,20 +349,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
-            }
-        }
-    },
-    "definitions": {
-        "models.Resp": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "message": {
-                    "type": "string"
-                }
             }
         }
     },

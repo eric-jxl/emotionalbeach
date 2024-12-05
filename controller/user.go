@@ -26,8 +26,6 @@ func init() {
 // @Tags 用户
 // @Produce json
 // @Param Uid header string true "用户身份"
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 500 {object} models.Resp "请求错误"
 // @Security ApiKeyAuth
 // @Router /v1/user/list [get]
 func GetUsers(ctx *gin.Context) {
@@ -64,9 +62,9 @@ func findUser(idStr, email, phone string) (*models.UserBasic, error) {
 // @Param phone query string false "手机号"
 // @Param email query string false "Email"
 // @Produce json
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 400 {object} models.Resp "请求错误
-// @Failure 500 {object} models.Resp "内部错误"
+//
+//	models.Resp "请求成功"
+//
 // @Security ApiKeyAuth
 // @Router /v1/user/condition [get]
 func GetAppointUser(ctx *gin.Context) {
@@ -93,9 +91,6 @@ func GetAppointUser(ctx *gin.Context) {
 // @Produce application/json
 // @Param name formData string true "Name"
 // @Param password formData string true "Password"
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 401 {object} models.Resp "请求失败
-// @Failure 502 {object} models.Resp "服务请求超时
 // @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
 	name := ctx.PostForm("name")
@@ -147,8 +142,6 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 // @Param repeat_password formData string true "repeat_password"
 // @Param phone formData string true "Phone"
 // @Param email formData string true  "EMAIL"
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure  401 {object} models.Resp "请求失败"
 // @Router /register [post]
 func NewUser(ctx *gin.Context) {
 	user := models.UserBasic{}
@@ -209,6 +202,7 @@ func NewUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
+		"code":    http.StatusOK,
 		"data":    userStruct,
 		"message": "新增用户成功！",
 	})

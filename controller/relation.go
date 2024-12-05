@@ -27,9 +27,6 @@ type user struct {
 // @Param Uid header uint true "用户身份"
 // @Param userId formData uint true "好友ID"
 // @Produce json
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 400 {object} models.Resp "请求错误
-// @Failure 500 {object} models.Resp "内部错误"
 // @Security ApiKeyAuth
 // @Router /v1/relation/list [post]
 func FriendList(ctx *gin.Context) {
@@ -64,9 +61,6 @@ func FriendList(ctx *gin.Context) {
 // @Param Uid header uint true "用户身份"
 // @Param userId formData uint false "增加的用户id"
 // @Produce json
-// @Success 200 {object} models.Resp "请求成功"
-// @Failure 400 {object} models.Resp "请求错误
-// @Failure 500 {object} models.Resp "内部错误"
 // @Security ApiKeyAuth
 // @Router /v1/relation/add [post]
 func AddFriendByName(ctx *gin.Context) {

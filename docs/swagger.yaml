@@ -1,13 +1,4 @@
 basePath: /
-definitions:
-  models.Resp:
-    properties:
-      code:
-        type: integer
-      data: {}
-      message:
-        type: string
-    type: object
 host: lcygetname.cn
 info:
   contact:
@@ -39,19 +30,7 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "401":
-          description: 请求失败
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "502":
-          description: 服务请求超时
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       summary: 登陆获取Token
       tags:
       - 注册登陆
@@ -88,15 +67,7 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "401":
-          description: 请求失败
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       summary: 创建用户
       tags:
       - 注册登陆
@@ -115,19 +86,7 @@ paths:
         type: integer
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "400":
-          description: 请求错误
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "500":
-          description: 内部错误
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       security:
       - ApiKeyAuth: []
       summary: 通过昵称加好友
@@ -149,19 +108,7 @@ paths:
         type: integer
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "400":
-          description: 请求错误
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "500":
-          description: 内部错误
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       security:
       - ApiKeyAuth: []
       summary: 获取好友列表
@@ -190,19 +137,7 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "400":
-          description: 请求错误
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "500":
-          description: 内部错误
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       security:
       - ApiKeyAuth: []
       summary: 获取所有用户
@@ -241,15 +176,7 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: 请求成功
-          schema:
-            $ref: '#/definitions/models.Resp'
-        "500":
-          description: 请求错误
-          schema:
-            $ref: '#/definitions/models.Resp'
+      responses: {}
       security:
       - ApiKeyAuth: []
       summary: 获取所有用户
