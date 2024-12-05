@@ -208,9 +208,9 @@ func NewUser(ctx *gin.Context) {
 		models.Error(ctx, http.StatusInternalServerError, errs.Error())
 		return
 	}
-	models.Success(ctx, gin.H{
-		"message": "新增用户成功！",
+	ctx.JSON(http.StatusOK, gin.H{
 		"data":    userStruct,
+		"message": "新增用户成功！",
 	})
 }
 
