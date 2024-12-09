@@ -45,10 +45,9 @@ func main() {
 	routers.Use(cors.Default())
 	zap.S().Info("程序加载中...")
 	go func() {
-		err := routers.Run(":8080")
-		if err != nil {
+		if err := routers.Run(":8080"); err != nil {
 			zap.S().Error(err.Error())
-			return
+			os.Exit(1)
 		}
 	}()
 	quit := make(chan os.Signal, 1)
