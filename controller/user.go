@@ -88,12 +88,20 @@ func GetAppointUser(ctx *gin.Context) {
 		models.Error(ctx, http.StatusBadRequest, "至少需要一个参数（id、电子邮件或电话）")
 		return
 	}
-	userStruct, err := findUser(id, email, phone)
+	userBasic, err := findUser(id, email, phone)
 	if err != nil {
 		models.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
-	models.Success(ctx, userStruct)
+	info := userStruct{
+		Name:     userBasic.Name,
+		Avatar:   userBasic.Avatar,
+		Gender:   userBasic.Gender,
+		Phone:    userBasic.Phone,
+		Email:    userBasic.Email,
+		Identity: userBasic.Identity,
+	}
+	models.Success(ctx, info)
 }
 
 // LoginByNameAndPassWord 登陆
