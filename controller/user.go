@@ -34,7 +34,20 @@ func GetUsers(ctx *gin.Context) {
 		models.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
-	models.Success(ctx, list)
+	infos := make([]userStruct, 0)
+
+	for _, v := range list {
+		info := userStruct{
+			Name:     v.Name,
+			Avatar:   v.Avatar,
+			Gender:   v.Gender,
+			Phone:    v.Phone,
+			Email:    v.Email,
+			Identity: v.Identity,
+		}
+		infos = append(infos, info)
+	}
+	models.Success(ctx, infos)
 }
 
 // findUser 根据给定的条件查找用户
@@ -126,7 +139,7 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 	models.Success(ctx, gin.H{
 		"message": "登录成功",
-		"userId":  Rsp.ID,
+		"user_id": Rsp.ID,
 		"token":   token,
 	})
 }

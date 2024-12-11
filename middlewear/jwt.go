@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
@@ -20,22 +20,18 @@ var (
 // Claims 是一些实体（通常指的用户）的状态和额外的元数据
 type Claims struct {
 	UserID uint `json:"userId"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 // GenerateToken 根据用户的用户名和密码产生token
 func GenerateToken(userId uint, iss string) (string, error) {
 	// 设置token有效时间
-	nowTime := time.Now()
-	expireTime := nowTime.Add(14 * 24 * time.Hour) // 过期时间为14天
 
 	claims := Claims{
 		UserID: userId,
-		StandardClaims: jwt.StandardClaims{
-			// 过期时间
-			ExpiresAt: expireTime.Unix(),
-			// 指定token发行人
-			Issuer: iss,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
+			Issuer:    iss,
 		},
 	}
 
@@ -70,7 +66,7 @@ func JWY() gin.HandlerFunc {
 				models.Error(c, http.StatusUnauthorized, "token失效")
 				c.Abort()
 				return
-			} else if time.Now().Unix() > claims.ExpiresAt {
+			} else if time.Now().Unix() > claims.ExpiresAt.Time.Unix() {
 				err = TokenExpired
 				models.Error(c, http.StatusUnauthorized, "授权已过期")
 				c.Abort()
@@ -99,7 +95,6 @@ func ParseToken(token string) (*Claims, error) {
 
 	if tokenClaims != nil {
 		// 从tokenClaims中获取到Claims对象，并使用断言，将该对象转换为我们自己定义的Claims
-		// 要传入指针，项目中结构体都是用指针传递，节省空间。
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
 			return claims, nil
 		}

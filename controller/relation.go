@@ -11,7 +11,7 @@ import (
 )
 
 // user对返回数据进行屏蔽
-type user struct {
+type userStruct struct {
 	Name     string
 	Avatar   string
 	Gender   string
@@ -38,10 +38,10 @@ func FriendList(ctx *gin.Context) {
 		return
 	}
 
-	infos := make([]user, 0)
+	infos := make([]userStruct, 0)
 
 	for _, v := range *users {
-		info := user{
+		info := userStruct{
 			Name:     v.Name,
 			Avatar:   v.Avatar,
 			Gender:   v.Gender,
