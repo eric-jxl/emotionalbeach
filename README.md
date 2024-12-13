@@ -19,7 +19,7 @@ fresh -c .fresh.yaml
 
 ```shell
 cd existing_repo
-git remote add origin https://gitlab.com/Eric-jxl/emotionalbeach.git
+git remote add origin https://gitlab.com/eric-jxl/emotionalbeach.git
 git branch -M main
 git push -uf origin main
 ```
