@@ -28,8 +28,7 @@ func GenerateToken(userId uint, iss string) (string, error) {
 	claims := Claims{
 		UserID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
-			//ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Second)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			Issuer:    iss,
 		},
 	}
