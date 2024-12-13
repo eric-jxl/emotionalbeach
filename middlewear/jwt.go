@@ -2,7 +2,6 @@ package middlewear
 
 import (
 	"emotionalBeach/models"
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,8 +12,7 @@ import (
 )
 
 var (
-	TokenExpired = errors.New("token is expired")
-	jwtSecret    = []byte("emotionBeach")
+	jwtSecret = []byte("emotionBeach")
 )
 
 // Claims 是一些实体（通常指的用户）的状态和额外的元数据
@@ -30,7 +28,8 @@ func GenerateToken(userId uint, iss string) (string, error) {
 	claims := Claims{
 		UserID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
+			//ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Second)),
 			Issuer:    iss,
 		},
 	}
@@ -45,43 +44,26 @@ func JWY() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		user := c.GetHeader("Uid")
-		userId, err := strconv.Atoi(user)
 		if token == "" || user == "" {
 			models.Error(c, http.StatusUnauthorized, "授权信息和用户ID不能为空!")
 			c.Abort()
 			return
 		}
+		userId, err := strconv.Atoi(user)
 		if err != nil {
-			models.Error(c, http.StatusUnauthorized, "您uid不合法")
+			models.Error(c, http.StatusUnauthorized, "用户ID不合法")
 			c.Abort()
 			return
 		}
-		if token == "" {
-			models.Error(c, http.StatusUnauthorized, "请登录")
+		claims, errs := ParseToken(token)
+		if errs != nil || claims.UserID != uint(userId) {
+			models.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
 			c.Abort()
 			return
-		} else {
-			claims, err := ParseToken(token)
-			if err != nil {
-				models.Error(c, http.StatusUnauthorized, "token失效")
-				c.Abort()
-				return
-			} else if time.Now().Unix() > claims.ExpiresAt.Time.Unix() {
-				err = TokenExpired
-				models.Error(c, http.StatusUnauthorized, "授权已过期")
-				c.Abort()
-				return
-			}
-
-			if claims.UserID != uint(userId) {
-				models.Error(c, http.StatusUnauthorized, "您的登录身份不合法")
-				c.Abort()
-				return
-			}
-
-			zap.S().Info("token认证成功")
-			c.Next()
 		}
+
+		zap.S().Info("token认证成功")
+		c.Next()
 	}
 }
 
