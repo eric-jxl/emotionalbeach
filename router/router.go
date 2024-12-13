@@ -22,7 +22,17 @@ func Router() *gin.Engine {
 			"message": "pong",
 		})
 	})
-	router.POST("/login", controller.LoginByNameAndPassWord)
+	router.Any("/login", func(c *gin.Context) {
+		switch c.Request.Method {
+		case http.MethodGet:
+			controller.LoginByNameAndPassWord(c)
+		case http.MethodPost:
+			controller.LoginByNameAndPassWord(c)
+		default:
+			c.JSON(http.StatusMethodNotAllowed, gin.H{"code": http.StatusMethodNotAllowed, "message": "Only GET and POST methods are allowed"})
+		}
+
+	})
 	router.POST("/register", controller.NewUser)
 
 	v1 := router.Group("/v1")
