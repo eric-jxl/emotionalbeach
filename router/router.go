@@ -6,7 +6,6 @@ import (
 	"emotionalBeach/middlewear"
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -14,7 +13,7 @@ import (
 
 func Router() *gin.Engine {
 	router := gin.Default()
-	router.Use(cors.Default())
+	router.Use(middlewear.CorsMiddleware())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
