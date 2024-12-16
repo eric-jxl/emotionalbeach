@@ -13,7 +13,6 @@ import (
 
 func Router() *gin.Engine {
 	router := gin.Default()
-	router.Use(middlewear.CorsMiddleware())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
