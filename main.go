@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -42,7 +41,6 @@ func main() {
 	//初始化数据库
 	initialize.InitDB(*filepath)
 	routers := router.Router()
-	routers.Use(cors.Default())
 	zap.S().Info("程序加载中...")
 	go func() {
 		if err := routers.Run(":8080"); err != nil {
