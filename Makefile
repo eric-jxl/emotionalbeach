@@ -8,7 +8,12 @@ SERVER_PATH=$(BASE_PAH)/backend
 MAIN= $(BASE_PAH)/main.go
 APP_NAME=emotionalBeach
 
-.PHONY: upx_bin build_backend clean build_backend_on_linux
+.PHONY: upx_bin build_backend clean build_backend_on_linux gen fmt
+gen:
+	@go generate ./...
+fmt:
+	@go list -f {{.Dir}} ./... | xargs -I{} gofmt -w -s {}
+
 upx_bin:
 	upx $(BUILD_PATH)/$(APP_NAME)
 

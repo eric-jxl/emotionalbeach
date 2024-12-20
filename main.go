@@ -34,6 +34,8 @@ func init() {
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
+
+//go:generate swag init -o ./docs -g main.go
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	//初始化日志
@@ -51,6 +53,6 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	zap.S().Info("Shutdown Server ...")
-	zap.S().Info("Server exiting")
+	zap.S().Info("Initiating shutdown")
+	zap.S().Info("Hit CTRL-C again or send a second signal to force the shutdown.")
 }
