@@ -1,11 +1,12 @@
 basePath: /
-host: lcygetname.cn
 info:
   contact:
-    email: support@swagger.io
     name: Eric Jiang
     url: http://www.swagger.io/support
-  description: 使用go v1.22.9 + gin v1.10
+  description: |-
+    ```
+    Development Environment :go v1.22.9 + gin v1.10 + v1.25.12
+    ```
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -228,6 +229,9 @@ paths:
       summary: 更新用户信息
       tags:
       - 用户
+schemes:
+- http
+- https
 securityDefinitions:
   ApiKeyAuth:
     in: header

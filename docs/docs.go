@@ -11,8 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "Eric Jiang",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "url": "http://www.swagger.io/support"
         },
         "license": {
             "name": "Apache 2.0",
@@ -364,11 +363,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "lcygetname.cn",
+	Host:             "",
 	BasePath:         "/",
-	Schemes:          []string{},
+	Schemes:          []string{"http", "https"},
 	Title:            "情感沙滩API",
-	Description:      "使用go v1.22.9 + gin v1.10",
+	Description:      "```\nDevelopment Environment :go v1.22.9 + gin v1.10 + v1.25.12\n```",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

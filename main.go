@@ -21,17 +21,20 @@ func init() {
 
 // @title 情感沙滩API
 // @version 1.0
-// @description 使用go v1.22.9 + gin v1.10
+// @description ```
+// @description Development Environment :go v1.22.9 + gin v1.10 + v1.25.12
+// @description ```
 
 // @contact.name Eric Jiang
 // @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
-
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host lcygetname.cn
+
 // @BasePath /
+// @schemes http https
+
 // @securityDefinitions.apikey ApiKeyAuth
+// @type apiKey
 // @in header
 // @name Authorization
 

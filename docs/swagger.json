@@ -1,12 +1,15 @@
 {
+    "schemes": [
+        "http",
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
-        "description": "使用go v1.22.9 + gin v1.10",
+        "description": "```\nDevelopment Environment :go v1.22.9 + gin v1.10 + v1.25.12\n```",
         "title": "情感沙滩API",
         "contact": {
             "name": "Eric Jiang",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "url": "http://www.swagger.io/support"
         },
         "license": {
             "name": "Apache 2.0",
@@ -14,7 +17,6 @@
         },
         "version": "1.0"
     },
-    "host": "lcygetname.cn",
     "basePath": "/",
     "paths": {
         "/login": {
