@@ -365,7 +365,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
 	BasePath:         "/",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{},
 	Title:            "情感沙滩API",
 	Description:      "```\nDevelopment Environment :go v1.22.9 + gin v1.10 + v1.25.12\n```",
 	InfoInstanceName: "swagger",

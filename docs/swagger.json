@@ -1,8 +1,4 @@
 {
-    "schemes": [
-        "http",
-        "https"
-    ],
     "swagger": "2.0",
     "info": {
         "description": "```\nDevelopment Environment :go v1.22.9 + gin v1.10 + v1.25.12\n```",

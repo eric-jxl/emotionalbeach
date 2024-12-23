@@ -229,9 +229,6 @@ paths:
       summary: 更新用户信息
       tags:
       - 用户
-schemes:
-- http
-- https
 securityDefinitions:
   ApiKeyAuth:
     in: header

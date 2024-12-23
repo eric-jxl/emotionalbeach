@@ -31,8 +31,6 @@ func init() {
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @BasePath /
-// @schemes http https
-
 // @securityDefinitions.apikey ApiKeyAuth
 // @type apiKey
 // @in header
