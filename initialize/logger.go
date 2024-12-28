@@ -9,7 +9,6 @@ import (
 func InitLogger() {
 	//初始化日志
 	logger, err := zap.NewDevelopment()
-	log.Println("shshsh")
 	if err != nil {
 		log.Fatalf("日志初始化失败:%s", err.Error())
 	}
