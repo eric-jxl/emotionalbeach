@@ -18,7 +18,7 @@ compile:
     - go vet $(go list ./... | grep -v /vendor/)
     
   script:
-    - go build -trimpath -ldflags '-s -w' main.go 
+    - go build -trimpath -ldflags '-s -w' -o emotionalBeach main.go
   artifacts:
     paths:
       - emotionalBeach
