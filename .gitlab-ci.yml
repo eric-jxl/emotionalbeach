@@ -18,7 +18,7 @@ compile:
   before_script:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
-    - apt update && apt install upx
+    - sudo apt update -y &&  sudo apt install -y upx
     
   script:
     - make build_backend upx_bin
