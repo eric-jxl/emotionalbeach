@@ -6,13 +6,17 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-var filepath *string
+var (
+	filepath *string
+	Once     sync.Once
+)
 
 func init() {
 	filepath = flag.String("e", "env", "数据库配置文件(.env)路径")
@@ -38,13 +42,14 @@ func init() {
 
 //go:generate swag init -o ./docs -g main.go
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-	//初始化日志
-	initialize.InitLogger()
-	//初始化数据库
-	initialize.InitDB(*filepath)
+	Once.Do(func() {
+		gin.SetMode(gin.ReleaseMode)
+		//初始化日志
+		initialize.InitLogger()
+		//初始化数据库
+		initialize.InitDB(*filepath)
+	})
 	routers := router.Router()
-	zap.S().Info("程序加载中...")
 	go func() {
 		if err := routers.Run(":8080"); err != nil {
 			zap.S().Error(err.Error())

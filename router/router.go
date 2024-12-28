@@ -24,12 +24,10 @@ func Router() *gin.Engine {
 	})
 	router.Any("/login", func(c *gin.Context) {
 		switch c.Request.Method {
-		case http.MethodGet:
-			controller.LoginByNameAndPassWord(c)
 		case http.MethodPost:
 			controller.LoginByNameAndPassWord(c)
 		default:
-			c.JSON(http.StatusMethodNotAllowed, gin.H{"code": http.StatusMethodNotAllowed, "message": "Only GET and POST methods are allowed"})
+			c.JSON(http.StatusMethodNotAllowed, gin.H{"code": http.StatusMethodNotAllowed, "message": "Only  POST methods are allowed"})
 		}
 
 	})
