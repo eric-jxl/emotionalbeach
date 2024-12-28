@@ -40,7 +40,7 @@ func Router() *gin.Engine {
 	{
 		user.GET("/list", controller.GetUsers)
 		user.GET("/condition", controller.GetAppointUser)
-		user.Any("/delete", controller.DeleteUser)
+		user.DELETE("/delete", controller.DeleteUser)
 		user.POST("/update", controller.UpdateUser)
 	}
 
