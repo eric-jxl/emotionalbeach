@@ -18,7 +18,7 @@ compile:
   before_script:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
-    - apt-get update -y &&  apt-get install -y upx
+    - wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz && tar -zxvf upx-4.2.4-amd64_linux.tar.xz && cd tar -zxvf upx-4.2.4-amd64_linux && mv upx /usr/local/bin
     - mkdir -p cmd
     
   script:
@@ -27,15 +27,6 @@ compile:
     paths:
       - emotionalBeach
 
-report:
-  stage: test
-  script:
-    - go install gotest.tools/gotestsum@latest
-    - gotestsum --junitfile report.xml --format testname
-  artifacts:
-    when: always
-    reports:
-      junit: report.xml
       
 # deploy:
 #   stage: deploy
