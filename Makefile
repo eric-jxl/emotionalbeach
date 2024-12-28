@@ -15,12 +15,12 @@ fmt:
 	@go list -f {{.Dir}} ./... | xargs -I{} gofmt -w -s {}
 
 upx_bin:
-	upx $(BUILD_PATH)/$(APP_NAME)
+	@upx $(BUILD_PATH)/$(APP_NAME)
 
 build_backend:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GOBUILD) -trimpath -ldflags '-s -w' -o $(BUILD_PATH)/$(APP_NAME) $(MAIN)
 build_backend_on_linux:
-	GOOS=linux GOARCH=$(GOARCH) $(GOBUILD) -trimpath -ldflags '-s -w' -o $(BUILD_PATH)/$(APP_NAME) $(MAIN)
+	@GOOS=linux GOARCH=$(GOARCH) $(GOBUILD) -trimpath -ldflags '-s -w' -o $(BUILD_PATH)/$(APP_NAME) $(MAIN)
 
 clean:
 	rm -rf cmd/*
