@@ -20,7 +20,7 @@ compile:
     - go vet $(go list ./... | grep -v /vendor/)
     
   script:
-    - go build -ldflags="-s -w" -o emotionalBeach main.go
+    - make build_backend upx_bin
   artifacts:
     paths:
       - emotionalBeach
