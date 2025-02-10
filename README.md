@@ -23,3 +23,5 @@ git remote add origin https://gitlab.com/eric-jxl/emotionalbeach.git
 git branch -M main
 git push -uf origin main
 ```
+
+### 第一期目标实现登陆注册,用户表等接口
