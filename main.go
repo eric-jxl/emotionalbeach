@@ -6,7 +6,6 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,6 @@ import (
 
 var (
 	filepath *string
-	Once     sync.Once
 )
 
 func init() {
@@ -42,13 +40,11 @@ func init() {
 
 //go:generate swag init -o ./docs -g main.go
 func main() {
-	Once.Do(func() {
-		gin.SetMode(gin.ReleaseMode)
-		//初始化日志
-		initialize.InitLogger()
-		//初始化数据库
-		initialize.InitDB(*filepath)
-	})
+	gin.SetMode(gin.ReleaseMode)
+	//初始化日志
+	initialize.InitLogger()
+	//初始化数据库
+	initialize.InitDB(*filepath)
 	routers := router.Router()
 	go func() {
 		if err := routers.Run(":8080"); err != nil {
