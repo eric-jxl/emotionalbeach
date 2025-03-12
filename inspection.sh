@@ -6,7 +6,7 @@ SERVICES=("sshd" "crond" "nginx" "mysql" "docker")  # 可自定义要检查的�
 cat > "$HTML_FILE" <<EOF
 <html>
 <head>
-<title>院长NUC服务器巡检报告</title>
+<title>服务器巡检报告</title>
 <meta charset="utf-8">
 <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -20,7 +20,7 @@ cat > "$HTML_FILE" <<EOF
 </style>
 </head>
 <body>
-<h1>院长NUC服务器巡检报告</h1>
+<h1>服务器巡检报告</h1>
 <p>生成时间：$(date "+%Y-%m-%d %H:%M:%S")</p>
 EOF
 
