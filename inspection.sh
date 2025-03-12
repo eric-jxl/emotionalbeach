@@ -133,3 +133,9 @@ cat >> "$HTML_FILE" <<EOF
 EOF
 
 echo "巡检报告已生成：$HTML_FILE"
+
+TO="ericjxlss@163.com"
+SUBJECT="Linux巡检报告测试邮件"
+FROM="devops@noreply.com"
+
+echo "$HTML_FILE" | mail -a "Content-Type: text/html; charset=UTF-8" -s "$SUBJECT" -r "$FROM" "$TO"
