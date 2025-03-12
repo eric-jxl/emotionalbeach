@@ -136,6 +136,7 @@ echo "巡检报告已生成：$HTML_FILE"
 
 TO="ericjxlss@163.com"
 SUBJECT="Linux巡检报告测试邮件"
-FROM="devops@noreply.com"
+FROM="7995050481@qq.com"
 
-echo "$HTML_FILE" | mail -a "Content-Type: text/html; charset=UTF-8" -s "$SUBJECT" -r "$FROM" "$TO"
+mail -a "Content-Type: text/html; charset=UTF-8" -s "$SUBJECT" -r "$FROM" "$TO" < "$HTML_FILE"
+echo -e "\033[1;32m 邮件发送成功 \033[0m"
