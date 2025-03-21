@@ -34,7 +34,7 @@ func InitDB(dbPath string) {
 			SlowThreshold:             time.Second, // 慢 SQL 阈值
 			LogLevel:                  logger.Info, // 日志级别
 			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,        // 禁用彩色打印
+			Colorful:                  true,        // 彩色打印
 		},
 	)
 
