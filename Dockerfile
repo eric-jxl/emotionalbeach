@@ -3,6 +3,7 @@ FROM golang:${GO_VERSION}-alpine AS build
 WORKDIR /data
 USER root
 ENV TZ=Asia/Shanghai
+ENV GOPROXY=https://goproxy.io,direct
 COPY . .
 RUN go build -ldflags "-s -w" -o /data/emnotonalBeach main.go
 
