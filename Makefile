@@ -9,6 +9,8 @@ MAIN= $(BASE_PAH)/main.go
 APP_NAME=emotionalBeach
 
 .PHONY: upx_bin build_backend clean build_backend_on_linux gen fmt
+all: build_backend upx_bin
+
 gen:
 	@go generate ./...
 fmt:
