@@ -23,7 +23,7 @@ services:
       GOSUMDB: "off"
   db:
     image: postgres:13
-    restart: always
+    restart: unless-stopped
     user: postgres
     environment:
       POSTGRES_USER: postgres
