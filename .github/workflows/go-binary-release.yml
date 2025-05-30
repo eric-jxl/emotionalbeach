@@ -2,7 +2,7 @@ name: build-go-binary
 
 on:
   release:
-    types: [created] # 表示在创建新的 Release 时触发
+    types: [ created ] # 表示在创建新的 Release 时触发
   workflow_dispatch:
 
 jobs:
@@ -10,13 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux, windows, darwin] # 需要打包的系统
-        goarch: [amd64, arm64] # 需要打包的架构
+        goos: [ linux, windows, darwin ] # 需要打包的系统
+        goarch: [ amd64, arm64 ] # 需要打包的架构
         exclude: # 排除某些平台和架构
           - goarch: arm64
             goos: windows
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Build Multiple Platforms
         uses: wangyoucao577/go-release-action@v1.53
         with:
