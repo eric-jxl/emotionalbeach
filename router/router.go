@@ -35,7 +35,7 @@ func Router() *gin.Engine {
 
 	v1 := router.Group("/v1")
 	//用户接口
-	user := v1.Group("user").Use(middlewear.JWY())
+	user := v1.Group("user").Use(middlewear.AuthJwt())
 
 	{
 		user.GET("/list", controller.GetUsers)
@@ -45,7 +45,7 @@ func Router() *gin.Engine {
 	}
 
 	//好友关系
-	relation := v1.Group("relation").Use(middlewear.JWY())
+	relation := v1.Group("relation").Use(middlewear.AuthJwt())
 	{
 		relation.POST("/list", controller.FriendList)
 		relation.POST("/add", controller.AddFriendByName)

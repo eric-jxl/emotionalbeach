@@ -39,7 +39,7 @@ func GenerateToken(userId uint, iss string) (string, error) {
 	return token, err
 }
 
-func JWY() gin.HandlerFunc {
+func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		user := c.GetHeader("Uid")
