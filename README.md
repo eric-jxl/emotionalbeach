@@ -12,10 +12,17 @@ go install github.com/zzwx/fresh@latest  # latest release.
 fresh -generate  # 或者fresh -g
 fresh -c .fresh.yaml
 ```
+
+**启动前需要配置好psql数据库,配置文件默认在config/.env,可以通过-e 传入配置文件路径，默认web端口8080**
+```shell
+docker pull ghcr.io/eric-jxl/emotionalbeach:latest
+```
 > [!TIP]  
 > *新增docker ci/cd 打包发布到ghcr.io*
 > 
 > *创建release自动编译跨平台二进制包*
+>
+> 
 
 ## Add your files
 
