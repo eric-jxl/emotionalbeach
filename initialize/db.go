@@ -16,10 +16,11 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func InitDB(dbPath string) {
+func InitDB(dbPath string) error {
 	errs := godotenv.Load(dbPath)
 	if errs != nil {
 		log.Fatalf("Error loading .env file: %v", errs)
+		return errs
 	}
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -47,17 +48,20 @@ func InitDB(dbPath string) {
 	global.DB, err = gorm.Open(postgres.Open(dsn), config)
 	if err != nil {
 		zap.S().Error(err.Error())
+		return err
 	}
 	dbErr := global.DB.AutoMigrate(&models.UserBasic{}, models.Relation{})
 	zap.S().Info("数据库自动迁移...")
 	if dbErr != nil {
-		return
+		return dbErr
 	}
 	dbConnect, errs := global.DB.DB()
 	if errs != nil {
 		log.Fatalf("数据库错误%s\n", errs)
+		return errs
 	}
 	dbConnect.SetMaxIdleConns(10)           // 设置最大空闲连接数
 	dbConnect.SetMaxOpenConns(100)          // 设置最大打开连接数
 	dbConnect.SetConnMaxLifetime(time.Hour) // 设置连接最长生命周期（0表示没有限制）
+	return nil
 }

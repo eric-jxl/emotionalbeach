@@ -44,7 +44,10 @@ func main() {
 	//初始化日志
 	initialize.InitLogger()
 	//初始化数据库
-	initialize.InitDB(*filepath)
+	exception := initialize.InitDB(*filepath)
+	if exception != nil {
+		panic(exception)
+	}
 	routers := router.Router()
 	go func() {
 		if err := routers.Run(":8080"); err != nil {
