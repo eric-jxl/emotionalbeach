@@ -4,6 +4,13 @@
 [![Docker Image CI](https://github.com/eric-jxl/emotionalbeach/actions/workflows/docker-image.yml/badge.svg)](https://github.com/eric-jxl/emotionalbeach/actions/workflows/docker-image.yml)
 
 ## Getting started
+### 🔧 Install swag
+```bash
+# swagger文档自动生成工具
+go install github.com/swaggo/swag/cmd/swag@latest
+
+make gen  #命令见Makefile
+```
 
 ```shell
 # Hot loading

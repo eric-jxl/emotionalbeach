@@ -24,7 +24,7 @@ func init() {
 // @title 情感沙滩API
 // @version 1.0
 // @description ```
-// @description Development Environment :go v1.23.7 + gin v1.10 + gorm v1.25.12
+// @description Development Environment :go v1.23.7 + gin v1.10.1 + gorm v1.30.0
 // @description ```
 
 // @contact.name Eric Jiang
