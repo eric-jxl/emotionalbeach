@@ -13,6 +13,7 @@ func InitLogger() {
 		log.Fatalf("日志初始化失败:%s", err.Error())
 	}
 	//使用全局logger
+	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
 	zap.S().Info("初始化Zap日志")
 }
