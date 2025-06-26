@@ -50,8 +50,9 @@ func InitDB(dbPath string) error {
 		zap.S().Error(err.Error())
 		return err
 	}
+	zap.S().Info("数据库自动迁移中...")
 	dbErr := global.DB.AutoMigrate(&models.UserBasic{}, models.Relation{})
-	zap.S().Info("数据库自动迁移...")
+	zap.S().Info("数据库自动迁移完成")
 	if dbErr != nil {
 		return dbErr
 	}

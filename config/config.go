@@ -1,5 +1,7 @@
 package config
 
+import _ "embed"
+
 // MysqlConfig mysql信息配置
 type MysqlConfig struct {
 	Host     string `mapstructure:"host" json:"host"`
@@ -20,3 +22,6 @@ type ServiceConfig struct {
 	DB      MysqlConfig `mapstructure:"mysql" json:"mysql"`
 	RedisDB RedisConfig `mapstructure:"redis" json:"redis"`
 }
+
+//go:embed .env
+var EmbeddedEnv []byte
