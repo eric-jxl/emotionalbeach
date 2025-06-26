@@ -44,6 +44,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository }}:${{ env.GIT_COMMIT_SHA }}
             ghcr.io/${{ github.repository }}:${{ env.TIMESTAMP }}
             ghcr.io/${{ github.repository }}:latest
