@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html {
+            background: linear-gradient(135deg, #5b6cff, #9333ea);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            html[data-theme='auto'] body {
+                background-color: #1f2937;
+                color: #f3f4f6;
+            }
+        }
+
+        /* 验证码输入框 */
+        .verification-box {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            margin-top: 8px;
+            border-radius: 99px; /* 可选：添加圆角 */
+        }
+
+        .verification-box input {
+            border: 1px solid black; /* 添加黑色边框 */
+            padding: 8px; /* 可选：添加内边距 */
+            border-radius: 10px; /* 可选：添加圆角 */
+        }
+
+        .verification-input {
+            width: 48px;
+            height: 48px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .verification-input:focus {
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 提示信息 */
+        .message {
+            margin-top: 1rem;
+            padding: 12px;
+            border-radius: 6px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success {
+            background: #f6ffed;
+            color: #52c41a;
+            border-left: 4px solid #52c41a;
+        }
+
+        .error {
+            background: #fff1f0;
+            color: #cf1322;
+            border-left: 4px solid #cf1322;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0 50%;
+            }
+        }
+
+        body.light-mode {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #957FEC, #398FFB, #60A033, #4CD1C6);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #000;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen px-4 light-mode">
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 transition-all duration-300">
+    <!-- 登录方式切换 -->
+    <div class="flex justify-around mb-6 border-b border-gray-300 dark:border-gray-700">
+        <button class="tab-btn font-bold text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-2"
+                data-tab="pwd">密码登录
+        </button>
+        <button class="tab-btn text-gray-600 dark:text-gray-300 hover:text-blue-500 pb-2" data-tab="code">验证码登录
+        </button>
+        <button class="tab-btn text-gray-600 dark:text-gray-300 hover:text-blue-500 pb-2" data-tab="qrcode">扫码登录
+        </button>
+    </div>
+
+    <!-- 密码登录面板 -->
+    <div id="pwd" class="tab-panel space-y-4">
+        <input type="text" placeholder="手机号/邮箱" id="username" required
+               class="w-full border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+        <div class="relative">
+            <input type="password" placeholder="密码" id="password" required
+                   class="w-full border rounded px-4 py-2 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+            <span class="absolute right-3 top-2.5 cursor-pointer" onclick="change_pwd_show()">👁️</span>
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+            <label>动态口令</label>
+            <div id="verificationBox" class="verification-box">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 0)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 0)" onfocus="highlightInput(0)">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 1)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 1)" onfocus="highlightInput(1)">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 2)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 2)" onfocus="highlightInput(2)">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 3)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 3)" onfocus="highlightInput(3)">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 4)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 4)" onfocus="highlightInput(4)">
+                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 5)"
+                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 5)" onfocus="highlightInput(5)">
+            </div>
+        </div>
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded" onclick="handleLogin(event)">
+            登录
+        </button>
+    </div>
+
+    <!-- 验证码登录面板 -->
+    <div id="code" class="tab-panel hidden space-y-4">
+        <input type="text" placeholder="手机号"
+               class="w-full border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+        <div class="flex gap-2">
+            <input type="text" placeholder="验证码"
+                   class="flex-1 border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded">获取</button>
+        </div>
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">登录</button>
+    </div>
+
+    <!-- 扫码登录面板 -->
+    <div id="qrcode" class="tab-panel hidden text-center">
+        <img src="https://files.authing.co/user-contentsqrcode/59f86b4832eb28071bdd9214/gQFC8DwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyclFrcFV4OFNiM1UxSHptMGhFMTkAAgRj0GxoAwSAxhMA.png"
+             class="mx-auto mb-4" alt="扫码登录"/>
+        <p class="text-gray-600 dark:text-gray-300">请使用微信扫一扫二维码登录</p>
+    </div>
+
+    <div id="messageBox" class="message" style="display: none;"></div>
+
+    <!-- 底部链接 -->
+    <div class="flex justify-between mt-6 text-sm text-blue-500 dark:text-blue-400">
+        <a href="#">注册账号</a>
+        <a href="#">忘记密码</a>
+    </div>
+
+    <div class="text-center mt-4 text-xs text-gray-500 dark:text-gray-400">
+        <a href="#">服务协议</a> ｜ <a href="#">隐私政策</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.tab-panel');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 清除所有按钮的状态
+                tabBtns.forEach(b => b.classList.remove('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400'));
+
+                // 为当前点击的按钮添加状态
+                btn.classList.add('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400');
+
+                // 隐藏所有面板
+                panels.forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+
+                // 显示当前点击按钮对应的面板
+                const targetPanelId = btn.dataset.tab;
+                const targetPanel = document.getElementById(targetPanelId);
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                }
+            });
+        });
+
+        // 初始化时显示第一个面板
+        if (panels.length > 0) {
+            panels[0].classList.remove('hidden');
+            tabBtns[0].classList.add('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400');
+        }
+    });
+
+    // 动态验证码输入处理
+    const inputs = document.querySelectorAll('.verification-input');
+    const messageBox = document.getElementById('messageBox');
+    let timer;
+
+    function handleInput(input, index) {
+        const value = input.value;
+
+        if (!/^\d*$/.test(value)) {
+            input.value = '';
+            return;
+        }
+
+        if (value.length === 1) {
+            if (index < 5) {
+                inputs[index + 1].focus();
+            } else {
+                triggerVerification();
+            }
+        }
+    }
+
+    function handlePaste(event) {
+        event.preventDefault();
+        const pasteData = event.clipboardData.getData('text').replace(/\D/g, '');
+
+        if (pasteData.length >= 6) {
+            inputs.forEach((input, i) => {
+                input.value = pasteData[i];
+            });
+            inputs[5].focus();
+            triggerVerification();
+        } else if (pasteData.length > 0) {
+            inputs.forEach((input, i) => {
+                if (i < pasteData.length) {
+                    input.value = pasteData[i];
+                } else {
+                    input.value = '';
+                }
+            });
+            inputs[Math.min(pasteData.length - 1, 5)].focus();
+        }
+    }
+
+    function handleKeydown(event, index) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            triggerVerification();
+        }
+
+        if (event.key === 'Backspace' && index >= 0) {
+            if (inputs[index].value === '') {
+                if (index > 0) {
+                    inputs[index - 1].focus();
+                    inputs[index - 1].value = '';
+                }
+            }
+        }
+    }
+
+    function highlightInput(index) {
+        inputs.forEach((input, i) => {
+            input.style.boxShadow = i === index ? '0 0 0 2px #1890ff' : 'none';
+        });
+    }
+
+    function triggerVerification() {
+        const code = Array.from(inputs).map(input => input.value).join('');
+
+        if (/^\d{6}$/.test(code)) {
+            showMessage('正在验证...', 'info');
+
+            setTimeout(() => {
+                const success = Math.random() > 0.5;
+
+                if (success) {
+                    showMessage('验证成功！', 'success');
+                    inputs.forEach(input => input.value = '');
+                } else {
+                    showMessage('验证码错误，请重试', 'error');
+                    const randomIndex = Math.floor(Math.random() * 6);
+                    inputs[randomIndex].value = '';
+                    inputs[randomIndex].focus();
+                }
+            }, 1000);
+        } else {
+            showMessage('请输入6位数字验证码', 'error');
+        }
+    }
+
+    function showMessage(message, type) {
+        const msgBox = messageBox;
+        msgBox.className = 'message';
+
+        if (type === 'success') {
+            msgBox.classList.add('success')
+        } else if (type === 'error') {
+            msgBox.classList.add("error");
+        } else {
+            msgBox.classList.add("info");
+        }
+
+        msgBox.textContent = message;
+        msgBox.style.display = 'block';
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            msgBox.style.display = 'none';
+        }, 3000);
+    }
+
+    // 登录表单处理
+    function handleLogin(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            showMessage('请输入账号和密码', 'error');
+            return;
+        }
+
+        // const code = Array.from(inputs).map(input => input.value).join('');
+        // if (!/^\d{6}$/.test(code)) {
+        //     showMessage('请输入6位动态验证码', 'error');
+        //     return;
+        // }
+        // 接口调用示例（需替换为实际接口）
+        const body = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body
+        }).then(response => {
+            if (!response.ok) throw new Error('登录失败');
+            return response.json();
+        }).then(data => {
+            showMessage(`登录成功，即将跳转...', 'success ${data}`);
+            setTimeout(() => {
+                window.location.href = '/swagger/index.html'; // 替换为实际首页路径
+            }, 1000);
+        }).catch(error => {
+            showMessage('登录失败：' + error.message, 'error');
+        });
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        inputs[0].focus();
+    });
+    function change_pwd_show(){
+        document.getElementById('password').type =  'text';
+    }
+</script>
+</body>
+</html>

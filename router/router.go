@@ -4,11 +4,12 @@ import (
 	"emotionalBeach/controller"
 	_ "emotionalBeach/docs"
 	"emotionalBeach/middlewear"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"net/http"
+	"path/filepath"
+	"runtime"
 )
 
 func Router() *gin.Engine {
@@ -16,8 +17,17 @@ func Router() *gin.Engine {
 	//router := gin.New()
 	//router.Use(middlewear.ZapLogger(), gin.Recovery())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	//router.GET("/", func(c *gin.Context) {
+	//	c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	//})
+	_, filename, _, _ := runtime.Caller(0)
+	basePath := filepath.Dir(filename)
+
+	// 拼接模板路径（../templates/*）
+	templatePath := filepath.Join(basePath, "..", "templates", "*")
+	router.LoadHTMLGlob(templatePath)
 	router.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -114,16 +114,16 @@ func GetAppointUser(ctx *gin.Context) {
 // @Param password formData string true "Password"
 // @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
-	name := ctx.PostForm("name")
+	name := ctx.PostForm("username")
 	password := ctx.PostForm("password")
 	data, err := dao.FindUserByName(name)
-	if err != nil {
-		models.Error(ctx, http.StatusForbidden, "登录失败")
+	if data.Name == "" {
+		models.Error(ctx, http.StatusNotFound, "用户名不存在")
 		return
 	}
 
-	if data.Name == "" {
-		models.Error(ctx, http.StatusNotFound, "用户名不存在")
+	if err != nil {
+		models.Error(ctx, http.StatusForbidden, "登录失败")
 		return
 	}
 
@@ -134,14 +134,16 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		return
 	}
 
-	Rsp, err := dao.FindUserByNameAndPwd(name, data.Password)
-	if err != nil {
+	Rsp, err1 := dao.FindUserByNameAndPwd(name, data.Password)
+	if err1 != nil {
 		zap.S().Info("登录失败", err)
+		models.Error(ctx, http.StatusNotFound, "用户不存在")
+		return
 	}
 
 	//这里使用jwt做权限认证，后面将会介绍
-	token, err := middlewear.GenerateToken(Rsp.ID, Rsp.Name)
-	if err != nil {
+	token, err2 := middlewear.GenerateToken(Rsp.ID, Rsp.Name)
+	if err2 != nil {
 		zap.S().Info("生成token失败", err)
 		return
 	}

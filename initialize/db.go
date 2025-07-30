@@ -45,10 +45,15 @@ func InitDB(dbPath string) error {
 		config.Logger = newLogger
 	}
 	var err error
-	global.DB, err = gorm.Open(postgres.Open(dsn), config)
-	if err != nil {
+	if global.DB, err = gorm.Open(postgres.Open(dsn), config); err != nil {
 		zap.S().Error(err.Error())
 		return err
+	}
+	if sqlDB, tmpErr := global.DB.DB(); tmpErr == nil {
+		sqlDB.SetMaxOpenConns(20)           //  设置最大打开连接数
+		sqlDB.SetMaxIdleConns(100)          // 设置最大空闲连接数
+		sqlDB.SetConnMaxLifetime(time.Hour) // 设置连接最长生命周期（0表示没有限制）
+		sqlDB.SetConnMaxIdleTime(time.Hour * 1)
 	}
 	zap.S().Info("数据库自动迁移中...")
 	dbErr := global.DB.AutoMigrate(&models.UserBasic{}, models.Relation{})
@@ -56,13 +61,5 @@ func InitDB(dbPath string) error {
 	if dbErr != nil {
 		return dbErr
 	}
-	dbConnect, errs := global.DB.DB()
-	if errs != nil {
-		log.Fatalf("数据库错误%s\n", errs)
-		return errs
-	}
-	dbConnect.SetMaxIdleConns(10)           // 设置最大空闲连接数
-	dbConnect.SetMaxOpenConns(100)          // 设置最大打开连接数
-	dbConnect.SetConnMaxLifetime(time.Hour) // 设置连接最长生命周期（0表示没有限制）
 	return nil
 }
