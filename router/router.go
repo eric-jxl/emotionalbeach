@@ -4,30 +4,26 @@ import (
 	"emotionalBeach/controller"
 	_ "emotionalBeach/docs"
 	"emotionalBeach/middlewear"
+	"emotionalBeach/templates"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
-	"path/filepath"
-	"runtime"
 )
 
 func Router() *gin.Engine {
 	router := gin.Default()
-	//router := gin.New()
-	//router.Use(middlewear.ZapLogger(), gin.Recovery())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//router.GET("/", func(c *gin.Context) {
 	//	c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 	//})
-	_, filename, _, _ := runtime.Caller(0)
-	basePath := filepath.Dir(filename)
 
-	// 拼接模板路径（../templates/*）
-	templatePath := filepath.Join(basePath, "..", "templates", "*")
-	router.LoadHTMLGlob(templatePath)
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{})
+		data, err := templates.IndexHTML.ReadFile("index.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error loading index.html")
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
 	})
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

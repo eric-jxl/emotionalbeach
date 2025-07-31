@@ -345,7 +345,6 @@
                 throw new Error(`${data.message || '未知错误'}`);
             }
             showMessage('登录成功，即将跳转...');
-            console.log(data);
             setTimeout(() => {
                 window.location.href = '/swagger/index.html'; // 替换为实际首页路径
             }, 1000);
