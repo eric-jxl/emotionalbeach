@@ -311,7 +311,6 @@
     // 登录表单处理
     function handleLogin(event) {
         event.preventDefault();
-
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
 
@@ -325,19 +324,28 @@
         //     showMessage('请输入6位动态验证码', 'error');
         //     return;
         // }
-        // 接口调用示例（需替换为实际接口）
-        const body = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+        //fixme: 请求认证接口
+        const loginData = {
+            username: username,
+            password: password,
+        }
         fetch('/login', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             },
-            body: body
+            body: JSON.stringify(loginData),
         }).then(response => {
-            if (!response.ok) throw new Error('登录失败');
+            if (!response.ok) {
+                throw new Error(`登录失败: ${response.status}`);
+            }
             return response.json();
         }).then(data => {
-            showMessage(`登录成功，即将跳转...', 'success ${data}`);
+            if (data.code !== 200) {
+                throw new Error(`${data.message || '未知错误'}`);
+            }
+            showMessage('登录成功，即将跳转...');
+            console.log(data);
             setTimeout(() => {
                 window.location.href = '/swagger/index.html'; // 替换为实际首页路径
             }, 1000);

@@ -108,15 +108,21 @@ func GetAppointUser(ctx *gin.Context) {
 // @Summary 登陆获取Token
 // @Description 根据用户名、密码获取授权码
 // @Tags 注册登陆
-// @Accept multipart/form-data
+// @Accept application/json
 // @Produce application/json
-// @Param name formData string true "Name"
-// @Param password formData string true "Password"
+// @Param req body models.LoginRequest true "Name"
 // @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
-	name := ctx.PostForm("username")
-	password := ctx.PostForm("password")
-	data, err := dao.FindUserByName(name)
+	req := new(models.LoginRequest)
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request: " + err.Error(),
+		})
+		return
+	}
+	//name := ctx.PostForm("username")
+	//password := ctx.PostForm("password")
+	data, err := dao.FindUserByName(req.Username)
 	if data.Name == "" {
 		models.Error(ctx, http.StatusNotFound, "用户名不存在")
 		return
@@ -128,13 +134,13 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 
 	//由于数据库密码保存是使用md5密文的， 所以验证密码时，是将密码再次加密，然后进行对比，后期会讲解md:common.CheckPassWord
-	ok := common.CheckPassWord(password, data.Salt, data.Password)
+	ok := common.CheckPassWord(req.Password, data.Salt, data.Password)
 	if !ok {
 		models.Error(ctx, http.StatusUnauthorized, "密码错误")
 		return
 	}
 
-	Rsp, err1 := dao.FindUserByNameAndPwd(name, data.Password)
+	Rsp, err1 := dao.FindUserByNameAndPwd(req.Username, data.Password)
 	if err1 != nil {
 		zap.S().Info("登录失败", err)
 		models.Error(ctx, http.StatusNotFound, "用户不存在")

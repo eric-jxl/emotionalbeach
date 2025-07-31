@@ -1,4 +1,15 @@
 basePath: /
+definitions:
+  models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
 info:
   contact:
     name: Eric Jiang
@@ -16,19 +27,15 @@ paths:
   /login:
     post:
       consumes:
-      - multipart/form-data
+      - application/json
       description: 根据用户名、密码获取授权码
       parameters:
       - description: Name
-        in: formData
-        name: name
+        in: body
+        name: req
         required: true
-        type: string
-      - description: Password
-        in: formData
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
       produces:
       - application/json
       responses: {}
