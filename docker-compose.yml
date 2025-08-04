@@ -1,6 +1,6 @@
-version: "1.0"
 services:
   server:
+    image: ghcr.io/eric-jxl/emotionalbeach:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +21,12 @@ services:
       DB_HOST: db
       GOPROXY: "https://goproxy.cn,direct"
       GOSUMDB: "off"
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f","http://localhost:8080/ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   db:
     image: postgres:13
     restart: unless-stopped
