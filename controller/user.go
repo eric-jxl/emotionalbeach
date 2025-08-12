@@ -3,7 +3,7 @@ package controller
 import (
 	"emotionalBeach/common"
 	"emotionalBeach/dao"
-	"emotionalBeach/middlewear"
+	"emotionalBeach/middleware"
 	"emotionalBeach/models"
 	"fmt"
 	"math/rand"
@@ -148,7 +148,7 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 
 	//这里使用jwt做权限认证，后面将会介绍
-	token, err2 := middlewear.GenerateToken(Rsp.ID, Rsp.Name)
+	token, err2 := middleware.GenerateToken(Rsp.ID, Rsp.Name)
 	if err2 != nil {
 		zap.S().Info("生成token失败", err)
 		return

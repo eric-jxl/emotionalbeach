@@ -344,7 +344,7 @@
             if (data.code !== 200) {
                 throw new Error(`${data.message || '未知错误'}`);
             }
-            showMessage('登录成功，即将跳转...');
+            showMessage('登录成功，即将跳转...','success');
             setTimeout(() => {
                 window.location.href = '/swagger/index.html'; // 替换为实际首页路径
             }, 1000);

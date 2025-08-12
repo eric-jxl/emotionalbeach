@@ -3,7 +3,7 @@ package router
 import (
 	"emotionalBeach/controller"
 	_ "emotionalBeach/docs"
-	"emotionalBeach/middlewear"
+	"emotionalBeach/middleware"
 	"emotionalBeach/templates"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -43,7 +43,7 @@ func Router() *gin.Engine {
 
 	v1 := router.Group("/v1")
 	//用户接口
-	user := v1.Group("user").Use(middlewear.AuthJwt())
+	user := v1.Group("user").Use(middleware.AuthJwt())
 
 	{
 		user.GET("/list", controller.GetUsers)
@@ -53,7 +53,7 @@ func Router() *gin.Engine {
 	}
 
 	//好友关系
-	relation := v1.Group("relation").Use(middlewear.AuthJwt())
+	relation := v1.Group("relation").Use(middleware.AuthJwt())
 	{
 		relation.POST("/list", controller.FriendList)
 		relation.POST("/add", controller.AddFriendByName)

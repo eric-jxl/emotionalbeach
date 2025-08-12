@@ -1,4 +1,4 @@
-package middlewear
+package middleware
 
 import (
 	"emotionalBeach/initialize"
