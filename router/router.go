@@ -5,14 +5,16 @@ import (
 	_ "emotionalBeach/docs"
 	"emotionalBeach/middleware"
 	"emotionalBeach/templates"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"net/http"
 )
 
 func Router() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery(), middleware.ZapLogger())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//router.GET("/", func(c *gin.Context) {
 	//	c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
