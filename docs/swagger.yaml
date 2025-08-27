@@ -85,11 +85,6 @@ paths:
     post:
       description: 通过昵称加好友
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: integer
       - description: 增加的用户id
         in: formData
         name: userId
@@ -106,11 +101,6 @@ paths:
     post:
       description: 批量获取好友列表信息
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: integer
       - description: 好友ID
         in: formData
         name: userId
@@ -128,11 +118,6 @@ paths:
     get:
       description: 批量获取所有用户信息
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       - description: ID
         in: query
         name: id
@@ -157,11 +142,6 @@ paths:
     delete:
       description: 更新用户信息
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       - description: ID
         in: query
         name: id
@@ -178,12 +158,6 @@ paths:
   /v1/user/list:
     get:
       description: 批量获取所有用户信息
-      parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       produces:
       - application/json
       responses: {}
@@ -196,11 +170,6 @@ paths:
     post:
       description: 更新用户信息
       parameters:
-      - description: 用户身份
-        in: header
-        name: Uid
-        required: true
-        type: string
       - description: ID
         in: formData
         name: id

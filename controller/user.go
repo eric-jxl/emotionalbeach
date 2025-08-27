@@ -25,7 +25,6 @@ func init() {
 // @Description 批量获取所有用户信息
 // @Tags 用户
 // @Produce json
-// @Param Uid header string true "用户身份"
 // @Security ApiKeyAuth
 // @Router /v1/user/list [get]
 func GetUsers(ctx *gin.Context) {
@@ -70,7 +69,6 @@ func findUser(idStr, email, phone string) (*models.UserBasic, error) {
 // @Summary 获取所有用户
 // @Description 批量获取所有用户信息
 // @Tags 用户
-// @Param Uid header string true "用户身份"
 // @Param id query string false "ID"
 // @Param phone query string false "手机号"
 // @Param email query string false "Email"
@@ -120,8 +118,6 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		})
 		return
 	}
-	//name := ctx.PostForm("username")
-	//password := ctx.PostForm("password")
 	data, err := dao.FindUserByName(req.Username)
 	if data.Name == "" {
 		models.Error(ctx, http.StatusNotFound, "用户名不存在")
@@ -133,7 +129,7 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		return
 	}
 
-	//由于数据库密码保存是使用md5密文的， 所以验证密码时，是将密码再次加密，然后进行对比，后期会讲解md:common.CheckPassWord
+	//由于数据库密码保存是使用md5密文的
 	ok := common.CheckPassWord(req.Password, data.Salt, data.Password)
 	if !ok {
 		models.Error(ctx, http.StatusUnauthorized, "密码错误")
@@ -147,7 +143,6 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		return
 	}
 
-	//这里使用jwt做权限认证，后面将会介绍
 	token, err2 := middleware.GenerateToken(Rsp.ID, Rsp.Name)
 	if err2 != nil {
 		zap.S().Info("生成token失败", err)
@@ -241,7 +236,6 @@ func NewUser(ctx *gin.Context) {
 // @Summary 更新用户信息
 // @Description 更新用户信息
 // @Tags 用户
-// @Param Uid header string true "用户身份"
 // @Param id formData string true "ID"
 // @Param name formData string false "用户名"
 // @Param password formData string false "密码"
@@ -308,7 +302,6 @@ func UpdateUser(ctx *gin.Context) {
 // @Summary 更新用户信息
 // @Description 更新用户信息
 // @Tags 用户
-// @Param Uid header string true "用户身份"
 // @Param id query uint true "ID"
 // @Produce json
 // @Security ApiKeyAuth

@@ -120,13 +120,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
                         "description": "增加的用户id",
                         "name": "userId",
                         "in": "formData"
@@ -151,13 +144,6 @@ const docTemplate = `{
                 ],
                 "summary": "获取好友列表",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "好友ID",
@@ -185,13 +171,6 @@ const docTemplate = `{
                 ],
                 "summary": "获取所有用户",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "ID",
@@ -231,13 +210,6 @@ const docTemplate = `{
                 "summary": "更新用户信息",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "type": "integer",
                         "description": "ID",
                         "name": "id",
@@ -263,15 +235,6 @@ const docTemplate = `{
                     "用户"
                 ],
                 "summary": "获取所有用户",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {}
             }
         },
@@ -291,13 +254,6 @@ const docTemplate = `{
                 ],
                 "summary": "更新用户信息",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户身份",
-                        "name": "Uid",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "ID",

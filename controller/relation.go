@@ -25,7 +25,6 @@ type userStruct struct {
 // @Summary 获取好友列表
 // @Description 批量获取好友列表信息
 // @Tags 好友关系
-// @Param Uid header uint true "用户身份"
 // @Param userId formData uint true "好友ID"
 // @Produce json
 // @Security ApiKeyAuth
@@ -59,7 +58,6 @@ func FriendList(ctx *gin.Context) {
 // @Summary 通过昵称加好友
 // @Description 通过昵称加好友
 // @Tags 好友关系
-// @Param Uid header uint true "用户身份"
 // @Param userId formData uint false "增加的用户id"
 // @Produce json
 // @Security ApiKeyAuth

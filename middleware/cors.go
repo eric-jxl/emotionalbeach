@@ -1,14 +1,17 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CORSMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
+		log.Println("Origin:", origin)
 
 		// 检查请求来源是否在允许列表中
 		allowThisOrigin := false

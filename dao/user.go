@@ -19,8 +19,6 @@ func GetUserList() ([]models.UserBasic, error) {
 	return list, nil
 }
 
-//查询用户:根据昵称，根据电话，根据邮件
-
 // FindUserByNameAndPwd 昵称和密码查询
 func FindUserByNameAndPwd(name string, password string) (*models.UserBasic, error) {
 	user := models.UserBasic{}

@@ -66,6 +66,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 	var cfg Config
+	v.WatchConfig()
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}

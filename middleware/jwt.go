@@ -3,7 +3,6 @@ package middleware
 import (
 	"emotionalBeach/models"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,25 +41,20 @@ func GenerateToken(userId uint, iss string) (string, error) {
 func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
-		user := c.GetHeader("Uid")
-		if token == "" || user == "" {
-			models.Error(c, http.StatusUnauthorized, "授权信息和用户ID不能为空!")
-			c.Abort()
-			return
-		}
-		userId, err := strconv.Atoi(user)
-		if err != nil {
-			models.Error(c, http.StatusUnauthorized, "用户ID不合法")
-			c.Abort()
-			return
-		}
-		claims, errs := ParseToken(token)
-		if errs != nil || claims.UserID != uint(userId) {
-			models.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
+		if token == "" {
+			models.Error(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
 			c.Abort()
 			return
 		}
 
+		claims, err := ParseToken(token)
+		if err != nil || claims.UserID == 0 {
+			models.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
+			zap.S().Infof("token无效或用户身份不合法")
+			c.Abort()
+			return
+		}
+		c.Set("Uid", claims.UserID)
 		zap.S().Info("token认证成功")
 		c.Next()
 	}

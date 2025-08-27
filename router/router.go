@@ -18,9 +18,6 @@ func Router() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery(), middleware.ZapLogger())
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	//router.GET("/", func(c *gin.Context) {
-	//	c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
-	//})
 
 	router.GET("/", func(c *gin.Context) {
 		data, err := templates.IndexHTML.ReadFile("index.html")
