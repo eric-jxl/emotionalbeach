@@ -12,6 +12,7 @@ import (
 )
 
 func Router() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//router.GET("/", func(c *gin.Context) {

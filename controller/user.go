@@ -110,7 +110,7 @@ func GetAppointUser(ctx *gin.Context) {
 // @Tags 注册登陆
 // @Accept application/json
 // @Produce application/json
-// @Param req body models.LoginRequest true "Name"
+// @Param req body models.LoginRequest true "登录参数"
 // @Router /login [post]
 func LoginByNameAndPassWord(ctx *gin.Context) {
 	req := new(models.LoginRequest)

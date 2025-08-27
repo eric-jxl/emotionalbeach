@@ -3,8 +3,10 @@ definitions:
   models.LoginRequest:
     properties:
       password:
+        example: admin
         type: string
       username:
+        example: admin
         type: string
     required:
     - password
@@ -30,7 +32,7 @@ paths:
       - application/json
       description: 根据用户名、密码获取授权码
       parameters:
-      - description: Name
+      - description: 登录参数
         in: body
         name: req
         required: true

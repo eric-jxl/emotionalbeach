@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"emotionalBeach/global"
+	"emotionalBeach/initialize"
 	"emotionalBeach/models"
 	"errors"
 
@@ -11,7 +11,7 @@ import (
 // FriendList 获取好友列表
 func FriendList(userId uint) (*[]models.UserBasic, error) {
 	relation := make([]models.Relation, 0)
-	if tx := global.DB.Where("owner_id = ? and type=1", userId).Find(&relation); tx.RowsAffected == 0 {
+	if tx := initialize.MainDB.Where("owner_id = ? and type=1", userId).Find(&relation); tx.RowsAffected == 0 {
 		zap.S().Info("未查询到Relation数据")
 		return nil, errors.New("未查到好友关系")
 	}
@@ -22,7 +22,7 @@ func FriendList(userId uint) (*[]models.UserBasic, error) {
 	}
 
 	user := make([]models.UserBasic, 0)
-	if tx := global.DB.Where("id in ?", userID).Find(&user); tx.RowsAffected == 0 {
+	if tx := initialize.MainDB.Where("id in ?", userID).Find(&user); tx.RowsAffected == 0 {
 		zap.S().Info("未查询到Relation好友关系")
 		return nil, errors.New("未查到好友")
 	}
@@ -47,18 +47,18 @@ func AddFriend(userID, TargetId uint) (int, error) {
 
 	relation := models.Relation{}
 
-	if tx := global.DB.Where("owner_id = ? and target_id = ? and type = 1", userID, TargetId).First(&relation); tx.RowsAffected == 1 {
+	if tx := initialize.MainDB.Where("owner_id = ? and target_id = ? and type = 1", userID, TargetId).First(&relation); tx.RowsAffected == 1 {
 		zap.S().Info("该好友存在")
 		return 0, errors.New("好友已经存在")
 	}
 
-	if tx := global.DB.Where("owner_id = ? and target_id = ?  and type = 1", TargetId, userID).First(&relation); tx.RowsAffected == 1 {
+	if tx := initialize.MainDB.Where("owner_id = ? and target_id = ?  and type = 1", TargetId, userID).First(&relation); tx.RowsAffected == 1 {
 		zap.S().Info("该好友存在")
 		return 0, errors.New("好友已经存在")
 	}
 
 	//开启事务
-	tx := global.DB.Begin()
+	tx := initialize.MainDB.Begin()
 
 	relation.OwnerId = userID
 	relation.TargetID = targetUser.ID

@@ -37,7 +37,7 @@ const docTemplate = `{
                 "summary": "登陆获取Token",
                 "parameters": [
                     {
-                        "description": "Name",
+                        "description": "登录参数",
                         "name": "req",
                         "in": "body",
                         "required": true,
@@ -355,10 +355,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "admin"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "admin"
                 }
             }
         }

@@ -31,3 +31,4 @@ test
 *.out
 tmp/
 cmd/
+config/config.yaml

@@ -1,25 +1,26 @@
 package main
 
 import (
+	"emotionalBeach/config"
 	"emotionalBeach/initialize"
 	"emotionalBeach/router"
-	"flag"
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-var (
-	filepath *string
-)
-
-func init() {
-	filepath = flag.String("e", "env", "数据库配置文件(.env)路径")
-	flag.Parse()
-}
+//var (
+//	filepath *string
+//)
+//
+//func init() {
+//	filepath = flag.String("e", "env", "数据库配置文件(.env)路径")
+//	flag.Parse()
+//}
 
 // @title 情感沙滩API
 // @version 1.0
@@ -40,17 +41,33 @@ func init() {
 
 //go:generate swag init -o ./docs -g main.go
 func main() {
-	gin.SetMode(gin.ReleaseMode)
 	//初始化日志
 	initialize.InitLogger()
 	//初始化数据库
-	exception := initialize.InitDB(*filepath)
-	if exception != nil {
-		panic(exception)
+	cfg, dbErr := config.LoadConfig()
+	if dbErr != nil {
+		log.Fatalf("❌ 加载配置失败: %v", dbErr)
 	}
+
+	// 初始化数据库
+	if err := initialize.InitDatabases(cfg.Databases, cfg.Database.Default); err != nil {
+		log.Fatalf("❌ 数据库初始化失败: %v", err)
+	}
+	log.Printf("✅ 数据库连接成功")
+
+	if _, err := initialize.InitRedis(cfg.Redis); err != nil {
+		log.Fatalf("❌ Redis 初始化失败: %v", err)
+	}
+	log.Println("✅ Redis 连接成功")
+	initialize.StartDatabases()
+	//exception := initialize.InitDB(*filepath)
+	//if exception != nil {
+	//	panic(exception)
+	//}
 	routers := router.Router()
+	port := fmt.Sprintf(":%d", cfg.Server.Port)
 	go func() {
-		if err := routers.Run(":8080"); err != nil {
+		if err := routers.Run(port); err != nil {
 			zap.S().Error(err.Error())
 			os.Exit(1)
 		}
