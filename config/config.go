@@ -65,7 +65,6 @@ func LoadConfig() (*Config, error) {
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
-	v.AutomaticEnv()
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err

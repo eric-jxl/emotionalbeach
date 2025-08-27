@@ -157,13 +157,26 @@ func InitRedis(cfg config.RedisConfig) (*redis.Client, error) {
 	}
 
 	global.RedisClient = rdb
+	log.Println("✅ Redis 连接成功")
 	return rdb, nil
 }
 
 // StartDatabases 自动迁移数据库
-func StartDatabases() {
-	err := GetDefault().AutoMigrate(&models.UserBasic{}, &models.Relation{})
+func StartDatabases(config *config.Config) (err error) {
+	// 初始化数据库
+	if err = InitDatabases(config.Databases, config.Database.Default); err != nil {
+		log.Fatalf("❌ 数据库初始化失败: %v", err)
+		return
+	}
+
+	if _, err = InitRedis(config.Redis); err != nil {
+		log.Fatalf("❌ Redis 初始化失败: %v", err)
+		return
+	}
+	err = GetDefault().AutoMigrate(&models.UserBasic{}, &models.Relation{})
 	if err != nil {
 		log.Fatalf("启动出错: %v", err)
+		return
 	}
+	return
 }

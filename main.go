@@ -42,20 +42,13 @@ func main() {
 		log.Fatalf("❌ 加载配置失败: %v", dbErr)
 	}
 
-	// 初始化数据库
-	if err := initialize.InitDatabases(cfg.Databases, cfg.Database.Default); err != nil {
-		log.Fatalf("❌ 数据库初始化失败: %v", err)
+	dbErrs := initialize.StartDatabases(cfg)
+	if dbErrs != nil {
+		log.Fatalf("启动数据库和Redis失败: %v", dbErrs.Error())
 	}
-	log.Printf("✅ 数据库连接成功")
-
-	if _, err := initialize.InitRedis(cfg.Redis); err != nil {
-		log.Fatalf("❌ Redis 初始化失败: %v", err)
-	}
-	log.Println("✅ Redis 连接成功")
-	initialize.StartDatabases()
 	rdErr := controller.PreloadCache(global.RedisClient, initialize.MainDB)
 	if rdErr != nil {
-		log.Fatalf("Redis 预热失败: %v", rdErr)
+		log.Fatalf("Redis 预热失败: %v", rdErr.Error())
 	}
 	// 启动服务
 	routers := router.Router()
