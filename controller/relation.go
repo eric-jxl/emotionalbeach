@@ -13,6 +13,7 @@ import (
 // user对返回数据进行屏蔽
 type userStruct struct {
 	Name     string
+	Role     string
 	Avatar   string
 	Gender   string
 	Phone    string

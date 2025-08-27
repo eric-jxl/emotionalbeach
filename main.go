@@ -2,6 +2,8 @@ package main
 
 import (
 	"emotionalBeach/config"
+	"emotionalBeach/controller"
+	"emotionalBeach/global"
 	"emotionalBeach/initialize"
 	"emotionalBeach/router"
 	"fmt"
@@ -51,6 +53,10 @@ func main() {
 	}
 	log.Println("✅ Redis 连接成功")
 	initialize.StartDatabases()
+	rdErr := controller.PreloadCache(global.RedisClient, initialize.MainDB)
+	if rdErr != nil {
+		log.Fatalf("Redis 预热失败: %v", rdErr)
+	}
 	// 启动服务
 	routers := router.Router()
 	port := fmt.Sprintf(":%d", cfg.Server.Port)
