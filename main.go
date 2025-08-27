@@ -13,15 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//var (
-//	filepath *string
-//)
-//
-//func init() {
-//	filepath = flag.String("e", "env", "数据库配置文件(.env)路径")
-//	flag.Parse()
-//}
-
 // @title 情感沙滩API
 // @version 1.0
 // @description ```
@@ -60,10 +51,7 @@ func main() {
 	}
 	log.Println("✅ Redis 连接成功")
 	initialize.StartDatabases()
-	//exception := initialize.InitDB(*filepath)
-	//if exception != nil {
-	//	panic(exception)
-	//}
+	// 启动服务
 	routers := router.Router()
 	port := fmt.Sprintf(":%d", cfg.Server.Port)
 	go func() {
