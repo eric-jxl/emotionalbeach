@@ -12,7 +12,7 @@ services:
     networks:
       - open_server
     volumes:
-      - ./config/.env:/app/config/.env
+      - ./config/config.yaml:/app/config/config.yaml
     entrypoint: [ "./entrypoint.sh" ]
     depends_on:
       db:

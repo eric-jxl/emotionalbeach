@@ -36,3 +36,4 @@ CHANGELOG
 .fresh.yaml
 .gitlab-ci.yml
 inspection.sh
+.idea
