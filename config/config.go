@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/spf13/viper"
@@ -70,6 +70,6 @@ func LoadConfig() (*Config, error) {
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
-	log.Println("✅ 配置加载成功")
+	zap.S().Info("✅ 配置加载成功")
 	return &cfg, nil
 }

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/logger"
-	"log"
 	"time"
 
 	"emotionalBeach/config"
@@ -59,7 +59,7 @@ func InitDatabases(cfg map[string]map[string]interface{}, defaultDB string) erro
 			gdb, err = initMySQL(mysqlCfg)
 
 		default:
-			log.Printf("⚠️ 未知数据库类型: %s (跳过)", typ)
+			zap.S().Warnf("⚠️ 未知数据库类型: %s (跳过)", typ)
 			continue
 		}
 
@@ -68,13 +68,13 @@ func InitDatabases(cfg map[string]map[string]interface{}, defaultDB string) erro
 		}
 
 		DBs[name] = gdb
-		log.Printf("✅ 数据库 [%s] (%s) 连接成功", name, typ)
+		zap.S().Info("✅ 数据库 [%s] (%s) 连接成功", name, typ)
 	}
 
 	// 设置默认数据库
 	if db, ok := DBs[defaultDB]; ok {
 		MainDB = db
-		log.Printf("🎯 默认 ORM 数据库: %s", defaultDB)
+		zap.S().Infof("🎯 默认 ORM 数据库: %s", defaultDB)
 	} else {
 		return fmt.Errorf("指定的默认数据库 [%s] 不存在", defaultDB)
 	}
@@ -157,7 +157,7 @@ func InitRedis(cfg config.RedisConfig) (*redis.Client, error) {
 	}
 
 	global.RedisClient = rdb
-	log.Println("✅ Redis 连接成功")
+	zap.S().Info("✅ Redis 连接成功")
 	return rdb, nil
 }
 
@@ -165,17 +165,17 @@ func InitRedis(cfg config.RedisConfig) (*redis.Client, error) {
 func StartDatabases(config *config.Config) (err error) {
 	// 初始化数据库
 	if err = InitDatabases(config.Databases, config.Database.Default); err != nil {
-		log.Fatalf("❌ 数据库初始化失败: %v", err)
+		zap.S().Fatalf("❌ 数据库初始化失败: %v", err)
 		return
 	}
 
 	if _, err = InitRedis(config.Redis); err != nil {
-		log.Fatalf("❌ Redis 初始化失败: %v", err)
+		zap.S().Fatalf("❌ Redis 初始化失败: %v", err)
 		return
 	}
 	err = GetDefault().AutoMigrate(&models.UserBasic{}, &models.Relation{})
 	if err != nil {
-		log.Fatalf("启动出错: %v", err)
+		zap.S().Fatalf("启动出错: %v", err)
 		return
 	}
 	return

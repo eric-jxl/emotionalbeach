@@ -7,7 +7,6 @@ import (
 	"emotionalBeach/initialize"
 	"emotionalBeach/router"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,16 +38,16 @@ func main() {
 	//初始化数据库
 	cfg, dbErr := config.LoadConfig()
 	if dbErr != nil {
-		log.Fatalf("❌ 加载配置失败: %v", dbErr)
+		zap.S().Fatalf("❌ 加载配置失败: %v", dbErr)
 	}
 
 	dbErrs := initialize.StartDatabases(cfg)
 	if dbErrs != nil {
-		log.Fatalf("启动数据库和Redis失败: %v", dbErrs.Error())
+		zap.S().Fatalf("启动数据库和Redis失败: %v", dbErrs.Error())
 	}
 	rdErr := controller.PreloadCache(global.RedisClient, initialize.MainDB)
 	if rdErr != nil {
-		log.Fatalf("Redis 预热失败: %v", rdErr.Error())
+		zap.S().Fatalf("Redis 预热失败: %v", rdErr.Error())
 	}
 	// 启动服务
 	routers := router.Router()
@@ -62,6 +61,6 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	zap.S().Info("Initiating shutdown")
-	zap.S().Info("Hit CTRL-C again or send a second signal to force the shutdown.")
+	zap.S().Warn("Initiating shutdown")
+	zap.S().Warn("Hit CTRL-C again or send a second signal to force the shutdown.")
 }
