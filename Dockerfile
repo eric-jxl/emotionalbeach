@@ -8,7 +8,7 @@ RUN apk add --no-cache tzdata && \
     echo "Asia/Shanghai" > /etc/timezone
 ENV GOPROXY=https://goproxy.io,direct
 COPY . .
-RUN go build -ldflags "-s -w" -o /data/emnotonalBeach main.go
+RUN go build -trimpath -ldflags "-s -w" -o /data/emnotonalBeach main.go
 
 FROM alpine:latest AS final
 WORKDIR /app
