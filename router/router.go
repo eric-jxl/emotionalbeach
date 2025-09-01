@@ -6,6 +6,7 @@ import (
 	"emotionalBeach/middleware"
 	"emotionalBeach/templates"
 	"net/http"
+	"text/template"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -34,6 +35,25 @@ func Router() *gin.Engine {
 		}
 		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
 
+	})
+
+	router.GET("/dir", func(c *gin.Context) {
+		files, err := templates.IndexHTML.ReadDir(".")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "无法读取目录")
+			return
+		}
+
+		var fileList []string
+		for _, file := range files {
+			fileList = append(fileList, file.Name())
+		}
+		t := template.New("Dir")
+		t = template.Must(t.Parse(templates.DirHTMLContent))
+		err = t.Execute(c.Writer, fileList)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "模板渲染失败"})
+		}
 	})
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
