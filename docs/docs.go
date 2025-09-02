@@ -337,7 +337,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "情感沙滩API",
-	Description:      "```\nDevelopment Environment :go v1.23.7 + gin v1.10.1 + gorm v1.30.0\n```",
+	Description:      "```\nDevelopment Environment :go v1.23.7 + gin v1.10.1 + gorm v1.30.2 + viper v1.20.1\n```",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
