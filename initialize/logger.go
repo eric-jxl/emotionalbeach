@@ -1,8 +1,9 @@
 package initialize
 
 import (
-	"go.uber.org/zap/zapcore"
 	"os"
+
+	"go.uber.org/zap/zapcore"
 
 	"go.uber.org/zap"
 )

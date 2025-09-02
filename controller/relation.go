@@ -2,7 +2,7 @@ package controller
 
 import (
 	"emotionalBeach/dao"
-	"emotionalBeach/models"
+	"emotionalBeach/global"
 	"net/http"
 	"strconv"
 
@@ -34,7 +34,7 @@ func FriendList(ctx *gin.Context) {
 	users, err := dao.FriendList(uint(id))
 	if err != nil {
 		zap.S().Info("获取好友列表失败", err)
-		models.Error(ctx, http.StatusNotFound, "好友为空")
+		global.Error(ctx, http.StatusNotFound, "好友为空")
 		return
 	}
 
@@ -51,7 +51,7 @@ func FriendList(ctx *gin.Context) {
 		}
 		infos = append(infos, info)
 	}
-	models.Success(ctx, gin.H{"users": infos, "count": len(infos)})
+	global.Success(ctx, gin.H{"users": infos, "count": len(infos)})
 }
 
 // AddFriendByName 通过昵称加好友
@@ -86,7 +86,7 @@ func AddFriendByName(ctx *gin.Context) {
 			return
 		}
 	}
-	models.Success(ctx, gin.H{"msg": "添加好友成功"})
+	global.Success(ctx, gin.H{"msg": "添加好友成功"})
 
 }
 

@@ -1,4 +1,4 @@
-package models
+package global
 
 import (
 	"net/http"
@@ -6,19 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Resp struct {
+type response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
 func RespJson(c *gin.Context, code int, message string, data interface{}) {
-	resp := Resp{Code: code, Message: message, Data: data}
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, response{Code: code, Message: message, Data: data})
 }
 
 func Success(c *gin.Context, data interface{}) {
-	RespJson(c, http.StatusOK, "操作成功", data)
+	RespJson(c, http.StatusOK, "Success", data)
 }
 
 func Error(c *gin.Context, code int, message string) {
@@ -27,15 +26,4 @@ func Error(c *gin.Context, code int, message string) {
 
 func Fatal(c *gin.Context, message string) {
 	RespJson(c, http.StatusInternalServerError, message, nil)
-}
-
-func Exception() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if r := recover(); r != nil {
-				Error(c, http.StatusInternalServerError, "服务器错误")
-			}
-		}()
-		c.Next()
-	}
 }

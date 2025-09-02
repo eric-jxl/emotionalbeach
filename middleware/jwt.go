@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"emotionalBeach/models"
+	"emotionalBeach/global"
 	"net/http"
 	"time"
 
@@ -42,14 +42,14 @@ func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		if token == "" {
-			models.Error(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
+			global.Error(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
 			c.Abort()
 			return
 		}
 
 		claims, err := ParseToken(token)
 		if err != nil || claims.UserID == 0 {
-			models.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
+			global.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
 			zap.S().Infof("token无效或用户身份不合法")
 			c.Abort()
 			return

@@ -3,6 +3,7 @@ package controller
 import (
 	"emotionalBeach/common"
 	"emotionalBeach/dao"
+	"emotionalBeach/global"
 	"emotionalBeach/middleware"
 	"emotionalBeach/models"
 	"fmt"
@@ -30,7 +31,7 @@ func init() {
 func GetUsers(ctx *gin.Context) {
 	list, err := dao.GetUserList()
 	if err != nil {
-		models.Error(ctx, http.StatusInternalServerError, err.Error())
+		global.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 	infos := make([]userStruct, 0)
@@ -46,7 +47,7 @@ func GetUsers(ctx *gin.Context) {
 		}
 		infos = append(infos, info)
 	}
-	models.Success(ctx, infos)
+	global.Success(ctx, infos)
 }
 
 // findUser 根据给定的条件查找用户
@@ -83,12 +84,12 @@ func GetAppointUser(ctx *gin.Context) {
 	email := ctx.Query("email")
 	id := ctx.Query("id")
 	if id == "" && email == "" && phone == "" {
-		models.Error(ctx, http.StatusBadRequest, "至少需要一个参数（id、电子邮件或电话）")
+		global.Error(ctx, http.StatusBadRequest, "至少需要一个参数（id、电子邮件或电话）")
 		return
 	}
 	userBasic, err := findUser(id, email, phone)
 	if err != nil {
-		models.Error(ctx, http.StatusInternalServerError, err.Error())
+		global.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 	info := userStruct{
@@ -99,7 +100,7 @@ func GetAppointUser(ctx *gin.Context) {
 		Email:    userBasic.Email,
 		Identity: userBasic.Identity,
 	}
-	models.Success(ctx, info)
+	global.Success(ctx, info)
 }
 
 // LoginByNameAndPassWord 登陆
@@ -120,26 +121,26 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 	}
 	data, err := dao.FindUserByName(req.Username)
 	if data.Name == "" {
-		models.Error(ctx, http.StatusNotFound, "用户名不存在")
+		global.Error(ctx, http.StatusNotFound, "用户名不存在")
 		return
 	}
 
 	if err != nil {
-		models.Error(ctx, http.StatusForbidden, "登录失败")
+		global.Error(ctx, http.StatusForbidden, "登录失败")
 		return
 	}
 
 	//由于数据库密码保存是使用md5密文的
 	ok := common.CheckPassWord(req.Password, data.Salt, data.Password)
 	if !ok {
-		models.Error(ctx, http.StatusUnauthorized, "密码错误")
+		global.Error(ctx, http.StatusUnauthorized, "密码错误")
 		return
 	}
 
 	Rsp, err1 := dao.FindUserByNameAndPwd(req.Username, data.Password)
 	if err1 != nil {
 		zap.S().Info("登录失败", err)
-		models.Error(ctx, http.StatusNotFound, "用户不存在")
+		global.Error(ctx, http.StatusNotFound, "用户不存在")
 		return
 	}
 
@@ -148,7 +149,7 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		zap.S().Info("生成token失败", err)
 		return
 	}
-	models.Success(ctx, gin.H{
+	global.Success(ctx, gin.H{
 		"message": "登录成功",
 		"user_id": Rsp.ID,
 		"token":   token,
@@ -176,33 +177,33 @@ func NewUser(ctx *gin.Context) {
 	email := ctx.Request.FormValue("email")
 
 	if user.Name == "" || password == "" || repassword == "" {
-		models.Error(ctx, http.StatusUnauthorized, "用户名或密码或确认密码不能为空！")
+		global.Error(ctx, http.StatusUnauthorized, "用户名或密码或确认密码不能为空！")
 		return
 	}
 
 	//查询用户是否存在
 	_, err := dao.FindUser(user.Name)
 	if err != nil {
-		models.Error(ctx, http.StatusUnauthorized, "该用户已注册")
+		global.Error(ctx, http.StatusUnauthorized, "该用户已注册")
 		return
 	}
 
 	if password != repassword {
-		models.Error(ctx, http.StatusUnauthorized, "两次密码不一致")
+		global.Error(ctx, http.StatusUnauthorized, "两次密码不一致")
 		return
 	}
 
 	if phone == "" {
-		models.Error(ctx, http.StatusUnauthorized, "手机号不能为空!")
+		global.Error(ctx, http.StatusUnauthorized, "手机号不能为空!")
 		return
 	}
 	if len(phone) != 11 {
-		models.Error(ctx, http.StatusUnauthorized, "手机号必须为11位!")
+		global.Error(ctx, http.StatusUnauthorized, "手机号必须为11位!")
 		return
 	}
 
 	if !common.IsValidPhoneNumber(phone) {
-		models.Error(ctx, http.StatusForbidden, "手机号非法")
+		global.Error(ctx, http.StatusForbidden, "手机号非法")
 		return
 	}
 
@@ -222,7 +223,7 @@ func NewUser(ctx *gin.Context) {
 	}
 	userStruct, errs := dao.CreateUser(user)
 	if errs != nil {
-		models.Error(ctx, http.StatusInternalServerError, errs.Error())
+		global.Error(ctx, http.StatusInternalServerError, errs.Error())
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
@@ -289,11 +290,11 @@ func UpdateUser(ctx *gin.Context) {
 	Rsp, err := dao.UpdateUser(user)
 	if err != nil {
 		zap.S().Info("更新用户失败", err)
-		models.Error(ctx, http.StatusInternalServerError, "修改信息失败"+err.Error())
+		global.Error(ctx, http.StatusInternalServerError, "修改信息失败"+err.Error())
 		return
 	}
 
-	models.Success(ctx, gin.H{
+	global.Success(ctx, gin.H{
 		"uid": Rsp.ID,
 	})
 }
@@ -308,7 +309,7 @@ func UpdateUser(ctx *gin.Context) {
 // @Router /v1/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
 	if ctx.Request.Method != http.MethodDelete {
-		models.Error(ctx, http.StatusMethodNotAllowed, "Method not allowed, only DELETE is accepted")
+		global.Error(ctx, http.StatusMethodNotAllowed, "Method not allowed, only DELETE is accepted")
 		return
 	}
 	user := models.UserBasic{}
@@ -316,7 +317,7 @@ func DeleteUser(ctx *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		zap.S().Info("类型转换失败", err)
-		models.Error(ctx, http.StatusInternalServerError, "注销账号失败")
+		global.Error(ctx, http.StatusInternalServerError, "注销账号失败")
 		return
 	}
 
@@ -324,9 +325,9 @@ func DeleteUser(ctx *gin.Context) {
 	err = dao.DeleteUser(uint(id))
 	if err != nil {
 		zap.S().Info("注销用户失败", err)
-		models.Error(ctx, http.StatusInternalServerError, "注销账号失败")
+		global.Error(ctx, http.StatusInternalServerError, "注销账号失败")
 		return
 	}
 
-	models.Success(ctx, gin.H{"msg": "注销帐户成功!"})
+	global.Success(ctx, gin.H{"msg": "注销帐户成功!"})
 }

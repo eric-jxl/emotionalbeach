@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"emotionalBeach/initialize"
-	"go.uber.org/zap"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
