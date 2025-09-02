@@ -2,18 +2,19 @@ package initialize
 
 import (
 	"context"
+	"emotionalBeach/config"
 	"emotionalBeach/global"
 	"emotionalBeach/models"
 	"fmt"
+	"time"
+
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/logger"
-	"time"
 
-	"emotionalBeach/config"
 	"gorm.io/gorm"
 )
 
@@ -68,7 +69,7 @@ func InitDatabases(cfg map[string]map[string]interface{}, defaultDB string) erro
 		}
 
 		DBs[name] = gdb
-		zap.S().Info("✅ 数据库 [%s] (%s) 连接成功", name, typ)
+		zap.S().Infof("✅ 数据库 [%s] (%s) 连接成功", name, typ)
 	}
 
 	// 设置默认数据库

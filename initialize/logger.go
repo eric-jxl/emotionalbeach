@@ -33,5 +33,5 @@ func InitLogger() {
 	defer Logger.Sync()
 	//使用全局logger
 	zap.ReplaceGlobals(Logger)
-	zap.S().Info("初始化Zap日志")
+	zap.S().Info("🌏️ 启动服务中...")
 }

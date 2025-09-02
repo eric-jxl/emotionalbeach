@@ -40,7 +40,7 @@ func main() {
 	if dbErr != nil {
 		zap.S().Fatalf("❌ 加载配置失败: %v", dbErr)
 	}
-	zap.S().Infof("Server run port : %d", cfg.Server.Port)
+	zap.S().Infof("✅ 服务运行在端口: \x1b[32m%d\x1b[0m", cfg.Server.Port)
 
 	dbErrs := initialize.StartDatabases(cfg)
 	if dbErrs != nil {
