@@ -35,7 +35,7 @@ docker pull ghcr.io/eric-jxl/emotionalbeach:latest
 
 ```shell
 cd existing_repo
-git remote add origin https://gitlab.com/eric-jxl/emotionalbeach.git
+git remote add origin https://github.com/eric-jxl/emotionalbeach.git
 git branch -M main
 git push -uf origin main
 
