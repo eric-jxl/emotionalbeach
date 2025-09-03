@@ -77,7 +77,8 @@ func GithubCallback(c *gin.Context) {
 
 	// Step 5: 生成 JWT
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": userInfo,
-	})
+	//c.JSON(http.StatusOK, gin.H{
+	//	"user": userInfo,
+	//})
+	c.Redirect(http.StatusFound, strings.Replace(redirectURI, "callback", "swagger/index.html", 1))
 }
