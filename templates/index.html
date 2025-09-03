@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>首页</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         html {
             background: linear-gradient(135deg, #5b6cff, #9333ea);
@@ -84,6 +85,17 @@
             animation: gradientAnimation 10s ease infinite;
             color: #000;
         }
+        .github-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 32px;
+            color: #333;
+            transition: color 0.2s ease;
+        }
+        .github-btn:hover {
+            color: #000;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen px-4 light-mode">
@@ -155,6 +167,10 @@
     <!-- 底部链接 -->
     <div class="flex justify-between mt-6 text-sm text-blue-500 dark:text-blue-400">
         <a href="#">注册账号</a>
+        <!-- GitHub 登录按钮 -->
+        <button id="github-login" class="github-btn">
+            <i class="fa-brands fa-github"></i>
+        </button>
         <a href="#">忘记密码</a>
     </div>
 
@@ -354,9 +370,9 @@
     }
 
     // 初始化
-    document.addEventListener('DOMContentLoaded', () => {
-        inputs[0].focus();
-    });
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     inputs[0].focus();
+    // });
 
     function change_pwd_show() {
         document.getElementById('password').type = 'text';
@@ -366,6 +382,10 @@
         if (event.key === 'Enter') {
             document.querySelector('#btn-login').click();
         }
+    });
+
+    document.getElementById("github-login").addEventListener("click", () => {
+        location.href = "/login/github";
     });
 </script>
 </body>

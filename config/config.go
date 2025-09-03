@@ -9,7 +9,9 @@ import (
 )
 
 type ServerConfig struct {
-	Port int `mapstructure:"port"`
+	Port         int    `mapstructure:"port"`
+	ClientID     string `mapstructure:"clientID"`
+	ClientSecret string `mapstructure:"clientSecret"`
 }
 
 type DBCommon struct {
@@ -50,7 +52,6 @@ type Config struct {
 	Server struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
-
 	Databases map[string]map[string]interface{} `mapstructure:"databases"`
 	Database  struct {
 		Default string `mapstructure:"default"`

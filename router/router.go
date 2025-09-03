@@ -37,6 +37,10 @@ func Router() *gin.Engine {
 
 	})
 
+	// Github Login
+	router.GET("/login/github", controller.GithubLogin)
+	router.GET("/callback", controller.GithubCallback)
+
 	router.GET("/dir", func(c *gin.Context) {
 		files, err := templates.IndexHTML.ReadDir(".")
 		if err != nil {
