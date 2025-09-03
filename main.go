@@ -51,6 +51,7 @@ func main() {
 		zap.S().Fatalf("Redis 预热失败: %v", rdErr.Error())
 	}
 	// 启动服务
+	controller.ClientID, controller.ClientSecret = cfg.Server.ClientID, cfg.Server.ClientSecret
 	routers := router.Router()
 	port := fmt.Sprintf(":%d", cfg.Server.Port)
 	go func() {

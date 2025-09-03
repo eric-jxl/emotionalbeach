@@ -9,18 +9,17 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 var (
-	clientID     = viper.GetString("clientID")
-	clientSecret = viper.GetString("clientSecret")
+	ClientID     string
+	ClientSecret string
 	redirectURI  = "https://api.lcygetname.cn/callback"
 )
 
 // GithubLogin Step 1: 登录接口 -> 跳转 GitHub 授权页面
 func GithubLogin(c *gin.Context) {
-	authURL := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=user", clientID, url.QueryEscape(redirectURI))
+	authURL := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=user", ClientID, url.QueryEscape(redirectURI))
 	c.Redirect(http.StatusFound, authURL)
 }
 
@@ -35,8 +34,8 @@ func GithubCallback(c *gin.Context) {
 	// Step 3: 用 code 换取 access_token
 	tokenURL := "https://github.com/login/oauth/access_token"
 	data := url.Values{}
-	data.Set("client_id", clientID)
-	data.Set("client_secret", clientSecret)
+	data.Set("client_id", ClientID)
+	data.Set("client_secret", ClientSecret)
 	data.Set("code", code)
 	data.Set("redirect_uri", redirectURI)
 

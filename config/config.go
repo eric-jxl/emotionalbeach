@@ -50,7 +50,9 @@ type RedisConfig struct {
 
 type Config struct {
 	Server struct {
-		Port int `mapstructure:"port"`
+		Port         int    `mapstructure:"port"`
+		ClientID     string `mapstructure:"clientID"`
+		ClientSecret string `mapstructure:"clientSecret"`
 	} `mapstructure:"server"`
 	Databases map[string]map[string]interface{} `mapstructure:"databases"`
 	Database  struct {
