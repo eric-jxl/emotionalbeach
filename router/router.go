@@ -5,6 +5,7 @@ import (
 	_ "emotionalBeach/docs"
 	"emotionalBeach/middleware"
 	"emotionalBeach/templates"
+	"io/fs"
 	"net/http"
 	"text/template"
 
@@ -18,6 +19,11 @@ func Router() *gin.Engine {
 	//router := gin.Default()
 	router := gin.New()
 	router.Use(gin.Recovery(), middleware.ZapLogger())
+	fsys, err := fs.Sub(templates.AssetHTML, "assets")
+	if err != nil {
+		panic(err)
+	}
+	router.StaticFS("/assets", http.FS(fsys))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/", func(c *gin.Context) {

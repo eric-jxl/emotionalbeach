@@ -17,13 +17,25 @@ var (
 	redirectURI  = "https://api.lcygetname.cn/callback"
 )
 
-// GithubLogin Step 1: 登录接口 -> 跳转 GitHub 授权页面
+// GithubLogin 登录注册
+// @Summary GitHub 登录
+// @Description GitHub 一键授权登录
+// @Tags 注册登陆
+// @Accept application/x-www-form-urlencoded
+// @Produce application/x-www-form-urlencoded
+// @Router /login/github [get]
 func GithubLogin(c *gin.Context) {
 	authURL := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=user", ClientID, url.QueryEscape(redirectURI))
 	c.Redirect(http.StatusFound, authURL)
 }
 
-// GithubCallback Step 2: GitHub 回调接口
+// GithubCallback 登录注册
+// @Summary GitHub 回调接口
+// @Description GitHub 授权成功回调接口
+// @Tags 注册登陆
+// @Accept application/x-www-form-urlencoded
+// @Produce application/x-www-form-urlencoded
+// @Router /callback [get]
 func GithubCallback(c *gin.Context) {
 	code := c.Query("code")
 	if code == "" {
@@ -77,7 +89,5 @@ func GithubCallback(c *gin.Context) {
 
 	// Step 5: 生成 JWT
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": userInfo,
-	})
+	c.Redirect(http.StatusFound, strings.Replace(redirectURI, "callback", "swagger/index.html", 1))
 }

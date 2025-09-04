@@ -22,6 +22,22 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/callback": {
+            "get": {
+                "description": "GitHub 授权成功回调接口",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "注册登陆"
+                ],
+                "summary": "GitHub 回调接口",
+                "responses": {}
+            }
+        },
         "/login": {
             "post": {
                 "description": "根据用户名、密码获取授权码",
@@ -46,6 +62,22 @@ const docTemplate = `{
                         }
                     }
                 ],
+                "responses": {}
+            }
+        },
+        "/login/github": {
+            "get": {
+                "description": "GitHub 一键授权登录",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "注册登陆"
+                ],
+                "summary": "GitHub 登录",
                 "responses": {}
             }
         },

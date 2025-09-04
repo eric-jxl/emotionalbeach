@@ -26,6 +26,17 @@ info:
   title: 情感沙滩API
   version: "1.0"
 paths:
+  /callback:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: GitHub 授权成功回调接口
+      produces:
+      - application/x-www-form-urlencoded
+      responses: {}
+      summary: GitHub 回调接口
+      tags:
+      - 注册登陆
   /login:
     post:
       consumes:
@@ -42,6 +53,17 @@ paths:
       - application/json
       responses: {}
       summary: 登陆获取Token
+      tags:
+      - 注册登陆
+  /login/github:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: GitHub 一键授权登录
+      produces:
+      - application/x-www-form-urlencoded
+      responses: {}
+      summary: GitHub 登录
       tags:
       - 注册登陆
   /register:

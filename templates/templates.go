@@ -21,3 +21,6 @@ const DirHTMLContent = `
 </body>
 </html>
 `
+
+//go:embed assets/*
+var AssetHTML embed.FS
