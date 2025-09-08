@@ -232,14 +232,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新用户信息",
+                "description": "删除用户",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "用户"
                 ],
-                "summary": "更新用户信息",
+                "summary": "删除用户",
                 "parameters": [
                     {
                         "type": "integer",
@@ -319,13 +319,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "avatar",
+                        "description": "头像",
                         "name": "avatar",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "gender",
+                        "description": "性别",
                         "name": "gender",
                         "in": "formData"
                     }

@@ -162,7 +162,7 @@ paths:
       - 用户
   /v1/user/delete:
     delete:
-      description: 更新用户信息
+      description: 删除用户
       parameters:
       - description: ID
         in: query
@@ -174,7 +174,7 @@ paths:
       responses: {}
       security:
       - ApiKeyAuth: []
-      summary: 更新用户信息
+      summary: 删除用户
       tags:
       - 用户
   /v1/user/list:
@@ -213,11 +213,11 @@ paths:
         in: formData
         name: email
         type: string
-      - description: avatar
+      - description: 头像
         in: formData
         name: avatar
         type: string
-      - description: gender
+      - description: 性别
         in: formData
         name: gender
         type: string
