@@ -169,10 +169,11 @@ func StartDatabases(config *config.Config) (err error) {
 		zap.S().Fatalf("❌ 数据库初始化失败: %v", err)
 		return
 	}
-
-	if _, err = InitRedis(config.Redis); err != nil {
-		zap.S().Fatalf("❌ Redis 初始化失败: %v", err)
-		return
+	if config.Server.EnableRedis {
+		if _, err = InitRedis(config.Redis); err != nil {
+			zap.S().Fatalf("❌ Redis 初始化失败: %v", err)
+			return
+		}
 	}
 	err = GetDefault().AutoMigrate(&models.UserBasic{}, &models.Relation{})
 	if err != nil {

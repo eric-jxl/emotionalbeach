@@ -4,7 +4,8 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>首页</title>
-    <script src="/assets/cdnFallback.js"></script>
+    <script src="/assets/tailwindcss.js" async></script>
+    <!--    <script src="/assets/cdnFallback.js"></script>-->
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <style>
         html {
@@ -85,6 +86,7 @@
             animation: gradientAnimation 10s ease infinite;
             color: #000;
         }
+
         .github-btn {
             border: none;
             background: none;
@@ -93,26 +95,26 @@
             color: #333;
             transition: color 0.2s ease;
         }
+
         .github-btn:hover {
             color: #000;
         }
     </style>
 </head>
-<script>
-    loadCDN.setConfig({
-        timeout: 5000,
-        cssFallbackDir: "/assets/font-awesome-7.0.0.min.css",
-        jsFallbackDir: "/assets/tailwindcss.js"
-    })
-    loadCDN.loadJS('//cdn.iocdn.cc/npm/@tailwindcss/browser@4', '/assets/tailwindcss.js')
-        .then(() => {
-            console.log('JS文件加载成功');
-        })
-        .catch((err) => {
-            console.error('JS加载失败', err);
-        });
-
-</script>
+<!--<script>-->
+<!--    loadCDN.setConfig({-->
+<!--        timeout: 5000,-->
+<!--        cssFallbackDir: "/assets/font-awesome-7.0.0.min.css",-->
+<!--        jsFallbackDir: "/assets/tailwindcss.js"-->
+<!--    })-->
+<!--    loadCDN.loadJS('//cdn.iocdn.cc/npm/@tailwindcss/browser@4', '/assets/tailwindcss.js')-->
+<!--        .then(() => {-->
+<!--            console.log('JS文件加载成功');-->
+<!--        })-->
+<!--        .catch((err) => {-->
+<!--            console.error('JS加载失败', err);-->
+<!--        });-->
+<!--</script>-->
 
 <body class="flex items-center justify-center min-h-screen px-4 light-mode">
 
@@ -137,24 +139,9 @@
                    class="w-full border rounded px-4 py-2 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
             <span class="absolute right-3 top-2.5 cursor-pointer" onclick="change_pwd_show()">👁️</span>
         </div>
-        <!--        <div style="margin-bottom: 1.5rem;">-->
-        <!--            <label>动态口令</label>-->
-        <!--            <div id="verificationBox" class="verification-box">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 0)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 0)" onfocus="highlightInput(0)">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 1)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 1)" onfocus="highlightInput(1)">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 2)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 2)" onfocus="highlightInput(2)">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 3)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 3)" onfocus="highlightInput(3)">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 4)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 4)" onfocus="highlightInput(4)">-->
-        <!--                <input type="text" class="verification-input" maxlength="1" oninput="handleInput(this, 5)"-->
-        <!--                       onpaste="handlePaste(event)" onkeydown="handleKeydown(event, 5)" onfocus="highlightInput(5)">-->
-        <!--            </div>-->
-        <!--        </div>-->
-        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded" onclick="handleLogin(event)" id="btn-login">
+
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded" onclick="handleLogin(event)"
+                id="btn-login">
             登录
         </button>
     </div>
@@ -173,9 +160,6 @@
 
     <!-- 扫码登录面板 -->
     <div id="qrcode" class="tab-panel hidden text-center">
-        <img src="https://files.authing.co/user-contentsqrcode/59f86b4832eb28071bdd9214/gQFC8DwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyclFrcFV4OFNiM1UxSHptMGhFMTkAAgRj0GxoAwSAxhMA.png"
-             class="mx-auto mb-4" alt="扫码登录"/>
-        <p class="text-gray-600 dark:text-gray-300">请使用微信扫一扫二维码登录</p>
     </div>
 
     <div id="messageBox" class="message" style="display: none;"></div>
@@ -231,95 +215,10 @@
     // 动态验证码输入处理
     const inputs = document.querySelectorAll('.verification-input');
     const messageBox = document.getElementById('messageBox');
-    let timer;
-
-    function handleInput(input, index) {
-        const value = input.value;
-
-        if (!/^\d*$/.test(value)) {
-            input.value = '';
-            return;
-        }
-
-        if (value.length === 1) {
-            if (index < 5) {
-                inputs[index + 1].focus();
-            } else {
-                triggerVerification();
-            }
-        }
-    }
-
-    function handlePaste(event) {
-        event.preventDefault();
-        const pasteData = event.clipboardData.getData('text').replace(/\D/g, '');
-
-        if (pasteData.length >= 6) {
-            inputs.forEach((input, i) => {
-                input.value = pasteData[i];
-            });
-            inputs[5].focus();
-            triggerVerification();
-        } else if (pasteData.length > 0) {
-            inputs.forEach((input, i) => {
-                if (i < pasteData.length) {
-                    input.value = pasteData[i];
-                } else {
-                    input.value = '';
-                }
-            });
-            inputs[Math.min(pasteData.length - 1, 5)].focus();
-        }
-    }
-
-    function handleKeydown(event, index) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            triggerVerification();
-        }
-
-        if (event.key === 'Backspace' && index >= 0) {
-            if (inputs[index].value === '') {
-                if (index > 0) {
-                    inputs[index - 1].focus();
-                    inputs[index - 1].value = '';
-                }
-            }
-        }
-    }
-
-    function highlightInput(index) {
-        inputs.forEach((input, i) => {
-            input.style.boxShadow = i === index ? '0 0 0 2px #1890ff' : 'none';
-        });
-    }
-
-    function triggerVerification() {
-        const code = Array.from(inputs).map(input => input.value).join('');
-
-        if (/^\d{6}$/.test(code)) {
-            showMessage('正在验证...', 'info');
-
-            setTimeout(() => {
-                const success = Math.random() > 0.5;
-
-                if (success) {
-                    showMessage('验证成功！', 'success');
-                    inputs.forEach(input => input.value = '');
-                } else {
-                    showMessage('验证码错误，请重试', 'error');
-                    const randomIndex = Math.floor(Math.random() * 6);
-                    inputs[randomIndex].value = '';
-                    inputs[randomIndex].focus();
-                }
-            }, 1000);
-        } else {
-            showMessage('请输入6位数字验证码', 'error');
-        }
-    }
 
     function showMessage(message, type) {
         const msgBox = messageBox;
+        let timer;
         msgBox.className = 'message';
 
         if (type === 'success') {
@@ -384,7 +283,6 @@
         });
     }
 
-
     function change_pwd_show() {
         document.getElementById('password').type = 'text';
     }
@@ -398,6 +296,7 @@
     document.getElementById("github-login").addEventListener("click", () => {
         location.href = "/login/github";
     });
+
 </script>
 </body>
 </html>

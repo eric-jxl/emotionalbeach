@@ -12,6 +12,7 @@ type ServerConfig struct {
 	Port         int    `mapstructure:"port"`
 	ClientID     string `mapstructure:"clientID"`
 	ClientSecret string `mapstructure:"clientSecret"`
+	EnableRedis  bool   `mapstructure:"enableRedis,default=false"`
 }
 
 type DBCommon struct {
@@ -49,11 +50,7 @@ type RedisConfig struct {
 }
 
 type Config struct {
-	Server struct {
-		Port         int    `mapstructure:"port"`
-		ClientID     string `mapstructure:"clientID"`
-		ClientSecret string `mapstructure:"clientSecret"`
-	} `mapstructure:"server"`
+	Server    ServerConfig                      `mapstructure:"server"`
 	Databases map[string]map[string]interface{} `mapstructure:"databases"`
 	Database  struct {
 		Default string `mapstructure:"default"`

@@ -46,9 +46,11 @@ func main() {
 	if dbErrs != nil {
 		zap.S().Fatalf("启动数据库和Redis失败: %v", dbErrs.Error())
 	}
-	rdErr := controller.PreloadCache(global.RedisClient, initialize.MainDB)
-	if rdErr != nil {
-		zap.S().Fatalf("Redis 预热失败: %v", rdErr.Error())
+	if cfg.Server.EnableRedis {
+		rdErr := controller.PreloadCache(global.RedisClient, initialize.MainDB)
+		if rdErr != nil {
+			zap.S().Fatalf("Redis 预热失败: %v", rdErr.Error())
+		}
 	}
 	// 启动服务
 	controller.ClientID, controller.ClientSecret = cfg.Server.ClientID, cfg.Server.ClientSecret

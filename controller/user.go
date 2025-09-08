@@ -12,14 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
-
-func init() {
-	govalidator.SetFieldsRequiredByDefault(true)
-}
 
 // GetUsers
 // @Summary 获取所有用户
@@ -242,8 +237,8 @@ func NewUser(ctx *gin.Context) {
 // @Param password formData string false "密码"
 // @Param phone formData string false "手机号"
 // @Param email formData string false "Email"
-// @Param avatar formData string false "avatar"
-// @Param gender formData string false "gender"
+// @Param avatar formData string false "头像"
+// @Param gender formData string false "性别"
 // @Produce json
 // @Security ApiKeyAuth
 // @Router /v1/user/update [post]
@@ -300,8 +295,8 @@ func UpdateUser(ctx *gin.Context) {
 }
 
 // DeleteUser
-// @Summary 更新用户信息
-// @Description 更新用户信息
+// @Summary 删除用户
+// @Description 删除用户
 // @Tags 用户
 // @Param id query uint true "ID"
 // @Produce json
