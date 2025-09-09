@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"emotionalBeach/initialize"
+	"emotionalBeach/internal/initialize"
 	"time"
 
 	"go.uber.org/zap"

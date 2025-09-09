@@ -3,9 +3,10 @@ package initialize
 import (
 	"context"
 	"emotionalBeach/config"
-	"emotionalBeach/global"
-	"emotionalBeach/models"
+	"emotionalBeach/internal/global"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -19,8 +20,17 @@ import (
 )
 
 var (
-	DBs    = map[string]*gorm.DB{}
-	MainDB *gorm.DB
+	DBs      = map[string]*gorm.DB{}
+	MainDB   *gorm.DB
+	MyLogger = logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+		logger.Config{
+			SlowThreshold:             2 * time.Second, // 慢 SQL 阈值
+			LogLevel:                  logger.Warn,     // 日志级别
+			IgnoreRecordNotFoundError: true,            // 忽略ErrRecordNotFound（记录未找到）错误
+			Colorful:                  false,           // 彩色打印
+		},
+	)
 )
 
 // InitDatabases 初始化所有数据库连接
@@ -91,7 +101,7 @@ func initPostgres(cfg config.PostgresConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=Asia/Shanghai", cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port, cfg.SSLMode)
 
 	gdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: MyLogger,
 	})
 	if err != nil {
 		return nil, err
@@ -105,7 +115,7 @@ func initMySQL(cfg config.MySQLConfig) (*gorm.DB, error) {
 		cfg.Charset, cfg.ParseTime, cfg.Loc)
 
 	gdb, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: MyLogger,
 	})
 	if err != nil {
 		return nil, err
@@ -174,11 +184,6 @@ func StartDatabases(config *config.Config) (err error) {
 			zap.S().Fatalf("❌ Redis 初始化失败: %v", err)
 			return
 		}
-	}
-	err = GetDefault().AutoMigrate(&models.UserBasic{}, &models.Relation{})
-	if err != nil {
-		zap.S().Fatalf("启动出错: %v", err)
-		return
 	}
 	return
 }

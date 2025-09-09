@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"emotionalBeach/global"
+	"emotionalBeach/internal/global"
 	"net/http"
 	"time"
 

@@ -1,9 +1,9 @@
 package dao
 
 import (
-	"emotionalBeach/common"
-	"emotionalBeach/initialize"
-	"emotionalBeach/models"
+	"emotionalBeach/internal/common"
+	"emotionalBeach/internal/initialize"
+	"emotionalBeach/internal/models"
 	"errors"
 	"strconv"
 	"time"

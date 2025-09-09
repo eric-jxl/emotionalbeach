@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"emotionalBeach/dao"
-	"emotionalBeach/global"
+	"emotionalBeach/internal/dao"
+	"emotionalBeach/internal/global"
 	"net/http"
 	"strconv"
 

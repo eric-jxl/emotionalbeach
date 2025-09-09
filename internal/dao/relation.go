@@ -1,8 +1,8 @@
 package dao
 
 import (
-	"emotionalBeach/initialize"
-	"emotionalBeach/models"
+	"emotionalBeach/internal/initialize"
+	"emotionalBeach/internal/models"
 	"errors"
 
 	"go.uber.org/zap"

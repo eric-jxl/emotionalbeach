@@ -1,10 +1,10 @@
 package router
 
 import (
-	"emotionalBeach/controller"
 	_ "emotionalBeach/docs"
-	"emotionalBeach/middleware"
-	"emotionalBeach/templates"
+	"emotionalBeach/internal/controller"
+	"emotionalBeach/internal/middleware"
+	"emotionalBeach/internal/templates"
 	"io/fs"
 	"net/http"
 	"text/template"
@@ -14,7 +14,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Router() *gin.Engine {
+func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	//router := gin.Default()
 	router := gin.New()

@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"emotionalBeach/common"
-	"emotionalBeach/dao"
-	"emotionalBeach/global"
-	"emotionalBeach/middleware"
-	"emotionalBeach/models"
+	"emotionalBeach/internal/common"
+	"emotionalBeach/internal/dao"
+	"emotionalBeach/internal/global"
+	"emotionalBeach/internal/middleware"
+	"emotionalBeach/internal/models"
 	"fmt"
 	"math/rand"
 	"net/http"

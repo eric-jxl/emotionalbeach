@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"emotionalBeach/models"
+	"emotionalBeach/internal/models"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
