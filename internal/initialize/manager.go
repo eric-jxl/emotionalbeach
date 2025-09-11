@@ -89,7 +89,6 @@ func InitDatabases(cfg map[string]map[string]interface{}, defaultDB string) erro
 	} else {
 		return fmt.Errorf("指定的默认数据库 [%s] 不存在", defaultDB)
 	}
-
 	return nil
 }
 
@@ -139,17 +138,6 @@ func setupPool(gdb *gorm.DB, cfg config.DBCommon) (*gorm.DB, error) {
 	return gdb, nil
 }
 
-// Get 获取指定数据库
-func Get(name string) (*gorm.DB, bool) {
-	db, ok := DBs[name]
-	return db, ok
-}
-
-// GetDefault 获取默认数据库
-func GetDefault() *gorm.DB {
-	return MainDB
-}
-
 // InitRedis 初始化Redis
 func InitRedis(cfg config.RedisConfig) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
@@ -175,7 +163,7 @@ func InitRedis(cfg config.RedisConfig) (*redis.Client, error) {
 // StartDatabases 自动迁移数据库
 func StartDatabases(config *config.Config) (err error) {
 	// 初始化数据库
-	if err = InitDatabases(config.Databases, config.Database.Default); err != nil {
+	if err = InitDatabases(config.Databases, config.DefaultDatabase); err != nil {
 		zap.S().Fatalf("❌ 数据库初始化失败: %v", err)
 		return
 	}

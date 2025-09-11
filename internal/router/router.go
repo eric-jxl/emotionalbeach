@@ -16,7 +16,6 @@ import (
 
 func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
-	//router := gin.Default()
 	router := gin.New()
 	router.Use(gin.Recovery(), middleware.ZapLogger())
 	fsys, err := fs.Sub(templates.AssetHTML, "assets")

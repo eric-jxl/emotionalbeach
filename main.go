@@ -41,7 +41,6 @@ func main() {
 		zap.S().Fatalf("❌ 加载配置失败: %v", dbErr)
 	}
 	zap.S().Infof("✅ 服务运行在端口: \x1b[32m%d\x1b[0m", cfg.Server.Port)
-
 	dbErrs := initialize.StartDatabases(cfg)
 	if dbErrs != nil {
 		zap.S().Fatalf("启动数据库和Redis失败: %v", dbErrs.Error())

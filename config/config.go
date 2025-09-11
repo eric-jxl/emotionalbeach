@@ -13,6 +13,9 @@ type ServerConfig struct {
 	ClientID     string `mapstructure:"clientID"`
 	ClientSecret string `mapstructure:"clientSecret"`
 	EnableRedis  bool   `mapstructure:"enableRedis,default=false"`
+	SmtpUser     string `mapstructure:"smtpUser"`
+	SmtpPassword string `mapstructure:"smtpPassword"`
+	MailFrom     string `mapstructure:"mailFrom"`
 }
 
 type DBCommon struct {
@@ -50,19 +53,17 @@ type RedisConfig struct {
 }
 
 type Config struct {
-	Server    ServerConfig                      `mapstructure:"server"`
-	Databases map[string]map[string]interface{} `mapstructure:"databases"`
-	Database  struct {
-		Default string `mapstructure:"default"`
-	} `mapstructure:"database"`
-	Redis RedisConfig `mapstructure:"redis"`
+	Server          ServerConfig                      `mapstructure:"server"`
+	Databases       map[string]map[string]interface{} `mapstructure:"databases"`
+	DefaultDatabase string                            `mapstructure:"default_database"`
+	Redis           RedisConfig                       `mapstructure:"redis"`
 }
 
 func LoadConfig() (*Config, error) {
 	v := viper.New()
+	v.AddConfigPath("config")
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
-	v.AddConfigPath("config")
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
