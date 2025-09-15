@@ -5,7 +5,7 @@ import (
 	"emotionalBeach/internal/controller"
 	"emotionalBeach/internal/global"
 	"emotionalBeach/internal/initialize"
-	"emotionalBeach/internal/router"
+	"emotionalBeach/internal/server"
 	"fmt"
 	"os"
 	"os/signal"
@@ -54,7 +54,7 @@ func main() {
 	// 启动服务
 	initialize.Migrate()
 	controller.ClientID, controller.ClientSecret = cfg.Server.ClientID, cfg.Server.ClientSecret
-	routers := router.NewRouter()
+	routers := server.NewRouter()
 	port := fmt.Sprintf(":%d", cfg.Server.Port)
 	go func() {
 		if err := routers.Run(port); err != nil {
