@@ -22,6 +22,7 @@ func NewRouter() *gin.Engine {
 	if err != nil {
 		panic(err)
 	}
+	// 静态资源服务
 	router.StaticFS("/assets", http.FS(fsys))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -31,15 +32,6 @@ func NewRouter() *gin.Engine {
 			c.String(http.StatusInternalServerError, "Error loading index.html")
 		}
 		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
-	})
-	router.GET("/MP_verify_IQVOOYLk72jXc5w9.txt", func(c *gin.Context) {
-		data, err := templates.IndexHTML.ReadFile("MP_verify_IQVOOYLk72jXc5w9.txt")
-
-		if err != nil {
-			c.String(http.StatusInternalServerError, "Error loading MP_verify_IQVOOYLk72jXc5w9.text")
-		}
-		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
-
 	})
 
 	// Github Login

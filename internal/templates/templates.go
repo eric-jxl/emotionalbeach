@@ -2,7 +2,7 @@ package templates
 
 import "embed"
 
-//go:embed index.html MP_verify_IQVOOYLk72jXc5w9.txt
+//go:embed index.html
 var IndexHTML embed.FS
 
 const DirHTMLContent = `
