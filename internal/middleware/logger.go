@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"emotionalBeach/internal/initialize"
+	"fmt"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // ZapLogger 自定义 zap logger 中间件
@@ -18,12 +18,9 @@ func ZapLogger() gin.HandlerFunc {
 		c.Next()
 		latency := time.Since(start)
 		status := c.Writer.Status()
-		coloredPath := "\033[32m" + path + "\033[0m"
+		coloredPath := fmt.Sprintf("\u001B[32m%-*d | %-*s | %-*s\u001B[0m", 3, status, 4, c.Request.Method, 30, path+query)
 
 		initialize.Logger.Info(coloredPath,
-			zap.Int("status", status),
-			zap.String("method", c.Request.Method),
-			zap.String("query", query),
 			zap.String("client_ip", c.ClientIP()),
 			zap.Duration("latency", latency),
 			zap.String("user_agent", c.Request.UserAgent()),

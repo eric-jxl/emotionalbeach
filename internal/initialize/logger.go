@@ -3,9 +3,8 @@ package initialize
 import (
 	"os"
 
-	"go.uber.org/zap/zapcore"
-
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var Logger *zap.Logger
