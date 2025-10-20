@@ -4,6 +4,7 @@ import (
 	_ "emotionalBeach/docs"
 	"emotionalBeach/internal/controller"
 	"emotionalBeach/internal/middleware"
+	"emotionalBeach/internal/service"
 	"emotionalBeach/internal/templates"
 	"io/fs"
 	"net/http"
@@ -88,6 +89,10 @@ func NewRouter() *gin.Engine {
 	{
 		relation.POST("/list", controller.FriendList)
 		relation.POST("/add", controller.AddFriendByName)
+	}
+	apiV1 := v1.Group("/api", middleware.AuthJwt())
+	{
+		apiV1.POST("/webhook", service.WebhookEmail)
 	}
 
 	return router

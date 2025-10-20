@@ -115,13 +115,12 @@ func LoginByNameAndPassWord(ctx *gin.Context) {
 		return
 	}
 	data, err := dao.FindUserByName(req.Username)
-	if data.Name == "" {
-		global.Error(ctx, http.StatusNotFound, "用户名不存在")
+	if data == nil || err != nil {
+		global.Error(ctx, http.StatusForbidden, "登录失败")
 		return
 	}
-
-	if err != nil {
-		global.Error(ctx, http.StatusForbidden, "登录失败")
+	if data.Name == "" {
+		global.Error(ctx, http.StatusNotFound, "用户名不存在")
 		return
 	}
 
