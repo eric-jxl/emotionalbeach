@@ -14,7 +14,7 @@ import (
 var (
 	ClientID     string
 	ClientSecret string
-	redirectURI  = "https://api.lcygetname.cn/callback"
+	redirectURI  = "https://api.ymmos.com/callback"
 )
 
 // GithubLogin 登录注册
