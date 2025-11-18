@@ -91,14 +91,12 @@ func sendEmailSync(subject, content string, receivers []string) error {
 
 	d := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPassword)
 
-	// 5. 发送邮件
 	err := d.DialAndSend(m)
 	if err != nil {
 		zap.S().Errorf("❌ 邮件发送失败: %v", err)
 		return fmt.Errorf("failed to dial and send email: %w", err)
 	}
 
-	// 6. 记录成功日志
 	zap.S().Infof("📧 已成功发送邮件: [%s] 给 %v", subject, validReceivers)
 	return nil
 }
@@ -115,7 +113,6 @@ func sendEmailSync(subject, content string, receivers []string) error {
 func WebhookEmail(c *gin.Context) {
 	var msg WebhookMessage
 
-	// 1. 解析 JSON 请求体
 	if err := c.ShouldBindJSON(&msg); err != nil { // 推荐使用 ShouldBindJSON
 		zap.S().Warnf("❌ 无效的 JSON 请求: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -126,7 +123,6 @@ func WebhookEmail(c *gin.Context) {
 		return
 	}
 
-	// 2. 基本字段校验
 	if msg.Title == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    http.StatusBadRequest,
@@ -152,12 +148,9 @@ func WebhookEmail(c *gin.Context) {
 		return
 	}
 
-	// 3. 启动协程异步发送邮件
 	go func() {
-		// 使用新的同步函数，并捕获其返回的错误
 		err := sendEmailSync(msg.Title, msg.Content, msg.Receivers)
 		if err != nil {
-			// 即使在协程中，我们也记录错误，以便排查问题
 			zap.S().Errorf("📧 协程内邮件发送最终失败: %v", err)
 		}
 	}()
