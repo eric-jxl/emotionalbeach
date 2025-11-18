@@ -134,6 +134,38 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/v1/api/webhook": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据标题、内容、邮箱发送邮件到指定邮箱号",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "Webhook对外接口",
+                "parameters": [
+                    {
+                        "description": "发送参数",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.WebhookMessage"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/v1/relation/add": {
             "post": {
                 "security": [
@@ -349,6 +381,24 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "admin"
+                }
+            }
+        },
+        "service.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "receivers": {
+                    "description": "支持多个收件人",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         }

@@ -12,6 +12,18 @@ definitions:
     - password
     - username
     type: object
+  service.WebhookMessage:
+    properties:
+      content:
+        type: string
+      receivers:
+        description: 支持多个收件人
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
 info:
   contact:
     name: Eric Jiang
@@ -103,6 +115,26 @@ paths:
       summary: 创建用户
       tags:
       - 注册登陆
+  /v1/api/webhook:
+    post:
+      consumes:
+      - application/json
+      description: 根据标题、内容、邮箱发送邮件到指定邮箱号
+      parameters:
+      - description: 发送参数
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/service.WebhookMessage'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Webhook对外接口
+      tags:
+      - 用户
   /v1/relation/add:
     post:
       description: 通过昵称加好友

@@ -103,7 +103,15 @@ func sendEmailSync(subject, content string, receivers []string) error {
 	return nil
 }
 
-// WebhookEmail 处理 webhook 请求
+// WebhookEmail Webhook对外接口
+// @Summary Webhook对外接口
+// @Description 根据标题、内容、邮箱发送邮件到指定邮箱号
+// @Tags 用户
+// @Accept application/json
+// @Produce application/json
+// @Param req body WebhookMessage true "发送参数"
+// @Router /v1/api/webhook [post]
+// @Security ApiKeyAuth
 func WebhookEmail(c *gin.Context) {
 	var msg WebhookMessage
 
