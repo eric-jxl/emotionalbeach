@@ -149,7 +149,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "用户"
+                    "API"
                 ],
                 "summary": "Webhook对外接口",
                 "parameters": [
@@ -386,6 +386,9 @@ const docTemplate = `{
         },
         "service.WebhookMessage": {
             "type": "object",
+            "required": [
+                "title"
+            ],
             "properties": {
                 "content": {
                     "type": "string"

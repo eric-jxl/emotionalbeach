@@ -23,6 +23,8 @@ definitions:
         type: array
       title:
         type: string
+    required:
+    - title
     type: object
 info:
   contact:
@@ -134,7 +136,7 @@ paths:
       - ApiKeyAuth: []
       summary: Webhook对外接口
       tags:
-      - 用户
+      - API
   /v1/relation/add:
     post:
       description: 通过昵称加好友
