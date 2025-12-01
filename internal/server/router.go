@@ -9,16 +9,40 @@ import (
 	"io/fs"
 	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"golang.org/x/time/rate"
 )
 
 func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery(), middleware.ZapLogger())
+	// todo: ip 限流器
+	ipLimiter := middleware.NewIPRateLimiter(rate.Every(10*time.Second), 5)
+
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"status_code": http.StatusNotFound,
+			"method":      c.Request.Method,
+			"path":        c.Request.URL.Path,
+			"error":       "请求的资源不存在",
+		})
+	})
+
+	router.NoMethod(func(c *gin.Context) {
+		c.JSON(http.StatusMethodNotAllowed, gin.H{
+			"error":            "请求的方法不被允许",
+			"status_code":      http.StatusMethodNotAllowed,
+			"allowed_methods":  c.GetHeader("Allow"), // Gin 通常会在 Allow 头部列出允许的方法
+			"requested_method": c.Request.Method,
+			"requested_path":   c.Request.URL.Path,
+		})
+	})
+	// 静态文件服务
 	fsys, err := fs.Sub(templates.AssetHTML, "assets")
 	if err != nil {
 		panic(err)
@@ -75,7 +99,7 @@ func NewRouter() *gin.Engine {
 
 	v1 := router.Group("/v1")
 	//用户接口
-	user := v1.Group("user").Use(middleware.AuthJwt())
+	user := v1.Group("user").Use(middleware.AuthJwt()).Use(middleware.RateLimitMiddleware(ipLimiter))
 
 	{
 		user.GET("/list", controller.GetUsers)
@@ -90,7 +114,7 @@ func NewRouter() *gin.Engine {
 		relation.POST("/list", controller.FriendList)
 		relation.POST("/add", controller.AddFriendByName)
 	}
-	apiV1 := v1.Group("/api", middleware.AuthJwt())
+	apiV1 := v1.Group("/api", middleware.AuthJwt()).Use(middleware.RateLimitMiddleware(ipLimiter))
 	{
 		apiV1.POST("/webhook", service.WebhookEmail)
 	}

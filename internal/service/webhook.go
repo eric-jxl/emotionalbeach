@@ -15,7 +15,7 @@ import (
 
 // WebhookMessage 消息结构
 type WebhookMessage struct {
-	Title     string   `json:"title"`
+	Title     string   `json:"title" binding:"required"`
 	Content   string   `json:"content"`
 	Receivers []string `json:"receivers"` // 支持多个收件人
 }
@@ -104,7 +104,7 @@ func sendEmailSync(subject, content string, receivers []string) error {
 // WebhookEmail Webhook对外接口
 // @Summary Webhook对外接口
 // @Description 根据标题、内容、邮箱发送邮件到指定邮箱号
-// @Tags 用户
+// @Tags API
 // @Accept application/json
 // @Produce application/json
 // @Param req body WebhookMessage true "发送参数"
@@ -118,27 +118,11 @@ func WebhookEmail(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    http.StatusBadRequest,
 			"status":  "error",
-			"message": fmt.Sprintf("Invalid JSON: %v", err.Error()),
+			"message": fmt.Sprintf("Invalid JSON: %s", err.Error()),
 		})
 		return
 	}
 
-	if msg.Title == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    http.StatusBadRequest,
-			"status":  "error",
-			"message": "Title is required",
-		})
-		return
-	}
-	if msg.Content == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    http.StatusBadRequest,
-			"status":  "error",
-			"message": "Content is required",
-		})
-		return
-	}
 	if len(msg.Receivers) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    http.StatusBadRequest,
