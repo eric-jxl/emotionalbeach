@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"emotionalBeach/internal/global"
+	"errors"
 	"net/http"
 	"time"
 
@@ -49,7 +50,12 @@ func AuthJwt() gin.HandlerFunc {
 
 		claims, err := ParseToken(token)
 		if err != nil || claims.UserID == 0 {
-			global.Error(c, http.StatusUnauthorized, "token无效或用户身份不合法")
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				global.Error(c, http.StatusUnauthorized, "Token expired")
+			} else {
+				global.Error(c, http.StatusUnauthorized, "Invalid or malformed token")
+			}
+
 			zap.S().Infof("token无效或用户身份不合法")
 			c.Abort()
 			return

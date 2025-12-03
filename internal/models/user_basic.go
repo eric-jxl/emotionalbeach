@@ -55,6 +55,6 @@ func (r *Relation) TableName() string {
 }
 
 type LoginRequest struct {
-	Username string `json:"username" binding:"required" example:"admin"`
-	Password string `json:"password" binding:"required" example:"admin"`
+	Username string `json:"username" binding:"required" example:""`
+	Password string `json:"password" binding:"required" example:""`
 }

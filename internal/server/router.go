@@ -8,7 +8,6 @@ import (
 	"emotionalBeach/internal/templates"
 	"io/fs"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,16 +31,13 @@ func NewRouter() *gin.Engine {
 			"error":       "请求的资源不存在",
 		})
 	})
-
-	router.NoMethod(func(c *gin.Context) {
-		c.JSON(http.StatusMethodNotAllowed, gin.H{
-			"error":            "请求的方法不被允许",
-			"status_code":      http.StatusMethodNotAllowed,
-			"allowed_methods":  c.GetHeader("Allow"), // Gin 通常会在 Allow 头部列出允许的方法
-			"requested_method": c.Request.Method,
-			"requested_path":   c.Request.URL.Path,
+	// 健康检查
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
 		})
 	})
+
 	// 静态文件服务
 	fsys, err := fs.Sub(templates.AssetHTML, "assets")
 	if err != nil {
@@ -63,29 +59,6 @@ func NewRouter() *gin.Engine {
 	router.GET("/login/github", controller.GithubLogin)
 	router.GET("/callback", controller.GithubCallback)
 
-	router.GET("/dir", func(c *gin.Context) {
-		files, err := templates.IndexHTML.ReadDir(".")
-		if err != nil {
-			c.String(http.StatusInternalServerError, "无法读取目录")
-			return
-		}
-
-		var fileList []string
-		for _, file := range files {
-			fileList = append(fileList, file.Name())
-		}
-		t := template.New("Dir")
-		t = template.Must(t.Parse(templates.DirHTMLContent))
-		err = t.Execute(c.Writer, fileList)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "模板渲染失败"})
-		}
-	})
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
 	router.Any("/login", func(c *gin.Context) {
 		switch c.Request.Method {
 		case http.MethodPost:
@@ -97,9 +70,10 @@ func NewRouter() *gin.Engine {
 	})
 	router.POST("/register", controller.NewUser)
 
-	v1 := router.Group("/v1")
+	// TODO: v1版本接口
+	v1 := router.Group("/v1", middleware.AuthJwt(), middleware.RateLimitMiddleware(ipLimiter))
 	//用户接口
-	user := v1.Group("user").Use(middleware.AuthJwt()).Use(middleware.RateLimitMiddleware(ipLimiter))
+	user := v1.Group("user")
 
 	{
 		user.GET("/list", controller.GetUsers)
@@ -109,12 +83,12 @@ func NewRouter() *gin.Engine {
 	}
 
 	//好友关系
-	relation := v1.Group("relation").Use(middleware.AuthJwt())
+	relation := v1.Group("relation")
 	{
 		relation.POST("/list", controller.FriendList)
 		relation.POST("/add", controller.AddFriendByName)
 	}
-	apiV1 := v1.Group("/api", middleware.AuthJwt()).Use(middleware.RateLimitMiddleware(ipLimiter))
+	apiV1 := v1.Group("/api")
 	{
 		apiV1.POST("/webhook", service.WebhookEmail)
 	}
