@@ -1,17 +1,11 @@
 package config
 
 import (
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-)
-
-// 全局配置实例
-var (
-	cfg  *Config
-	once sync.Once
 )
 
 type ServerConfig struct {
@@ -82,16 +76,17 @@ type ConnConfig struct {
 	TranTimeout  time.Duration // transaction sql timeout
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig() (cfg *Config, err error) {
 	v := viper.New()
 	v.AddConfigPath("config")
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
-	if err := v.ReadInConfig(); err != nil {
+	if err = v.ReadInConfig(); err != nil {
 		return nil, err
 	}
 	v.AutomaticEnv() // 支持环境变量覆盖
-	if err := v.Unmarshal(&cfg); err != nil {
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	if err = v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 	zap.S().Info("✅ 配置加载成功")
