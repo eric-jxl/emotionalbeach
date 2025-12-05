@@ -20,7 +20,7 @@ fresh -generate  # 或者fresh -g
 fresh -c .fresh.yaml
 ```
 
-**启动前需要配置好psql数据库,配置文件默认在config/.env,可以通过-e 传入配置文件路径，默认web端口8080**
+**启动前需要配置好psql数据库,配置文件默认在config/config.yml,也可以通过环境变量覆盖，默认web端口8080**
 ```shell
 docker pull ghcr.io/eric-jxl/emotionalbeach:latest
 ```
