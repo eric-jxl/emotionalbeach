@@ -15,7 +15,7 @@ func AssetsCacheMiddleware() gin.HandlerFunc {
 			// Cache-Control 是现代浏览器推荐的主要缓存控制头
 			c.Header("Cache-Control", "public, max-age=3600") // 3600 秒 = 1 小时
 			// Expires 是较老的头，但为了兼容性也可以加上
-			expiresTime := time.Now().Add(1 * time.Hour)
+			expiresTime := time.Now().Add(7 * 24 * time.Hour)
 			c.Header("Expires", expiresTime.UTC().Format(http.TimeFormat))
 		}
 	}
