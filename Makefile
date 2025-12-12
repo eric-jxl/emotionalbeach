@@ -4,7 +4,6 @@ GOOS=$(shell go env GOOS )
 
 BASE_PAH := $(shell pwd)
 BUILD_PATH = $(BASE_PAH)/cmd
-SERVER_PATH=$(BASE_PAH)/backend
 MAIN= $(BASE_PAH)/main.go
 APP_NAME=emotionalBeach
 

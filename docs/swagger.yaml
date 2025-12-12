@@ -3,10 +3,8 @@ definitions:
   models.LoginRequest:
     properties:
       password:
-        example: ""
         type: string
       username:
-        example: ""
         type: string
     required:
     - password

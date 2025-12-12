@@ -375,12 +375,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "password": {
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "username": {
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 }
             }
         },
