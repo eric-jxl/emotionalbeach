@@ -38,13 +38,16 @@ func NewRouter() *gin.Engine {
 		})
 	})
 
-	// 静态文件服务
-	fsys, err := fs.Sub(templates.AssetHTML, "assets")
-	if err != nil {
-		panic(err)
-	}
 	// 静态资源服务
-	router.StaticFS("/assets", http.FS(fsys))
+	assetsFS, _ := fs.Sub(templates.AssetHTML, "assets")
+	fileServer := http.FileServer(http.FS(assetsFS))
+	router.GET("/assets/*filepath", func(c *gin.Context) {
+		middleware.AssetsCacheMiddleware()(c)
+		if c.IsAborted() {
+			return
+		}
+		http.StripPrefix("/assets", fileServer).ServeHTTP(c.Writer, c.Request)
+	})
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/", func(c *gin.Context) {
