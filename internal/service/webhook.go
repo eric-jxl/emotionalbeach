@@ -107,7 +107,7 @@ func sendEmailSync(subject, content string, receivers []string) error {
 // @Tags API
 // @Accept application/json
 // @Produce application/json
-// @Param req body WebhookMessage true "发送参数"
+// @Param message body WebhookMessage true "请求参数"
 // @Router /v1/api/webhook [post]
 // @Security ApiKeyAuth
 func WebhookEmail(c *gin.Context) {

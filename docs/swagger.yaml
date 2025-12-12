@@ -123,9 +123,9 @@ paths:
       - application/json
       description: 根据标题、内容、邮箱发送邮件到指定邮箱号
       parameters:
-      - description: 发送参数
+      - description: 请求参数
         in: body
-        name: req
+        name: message
         required: true
         schema:
           $ref: '#/definitions/service.WebhookMessage'

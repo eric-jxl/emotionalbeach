@@ -154,8 +154,8 @@ const docTemplate = `{
                 "summary": "Webhook对外接口",
                 "parameters": [
                     {
-                        "description": "发送参数",
-                        "name": "req",
+                        "description": "请求参数",
+                        "name": "message",
                         "in": "body",
                         "required": true,
                         "schema": {
