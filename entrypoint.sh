@@ -10,4 +10,4 @@ if [ ! -f "$CONFIG_PATH" ]; then
   exit 1
 fi
 
-exec /app/emnotonalBeach -e "$CONFIG_PATH"
+exec /app/emnotonalBeach
