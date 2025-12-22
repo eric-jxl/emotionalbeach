@@ -5,7 +5,8 @@ USER root
 ENV GOPROXY=https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux
-
+    
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN go build -trimpath -ldflags "-s -w" -o /data/emnotonalBeach main.go
