@@ -4,8 +4,15 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>首页</title>
-    <script src="/assets/tailwindcss.js" defer></script>
-    <!--    <script src="/assets/cdnFallback.js"></script>-->
+    <style>
+        html {
+            visibility: hidden;
+        }
+    </style>
+    <script src="./assets/tailwindcss.js"></script>
+    <script>
+        document.documentElement.style.visibility = 'visible'
+    </script>
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <style>
         html {
