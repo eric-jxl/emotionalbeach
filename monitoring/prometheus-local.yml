@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    app: emotionalbeach
+    env: local
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+
+  # 应用本地运行时使用 host.docker.internal（Mac/Windows Docker Desktop 专用）
+  - job_name: emotionalbeach
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Prometheus 自监控
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+

@@ -32,3 +32,4 @@ test
 tmp/
 cmd/
 config/config.yaml
+logs/

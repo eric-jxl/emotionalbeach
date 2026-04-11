@@ -8,25 +8,23 @@ services:
     container_name: emotionalBeach
     restart: unless-stopped
     ports:
-      - 8080:8080
+      - "8080:8080"
     networks:
       - open_server
     volumes:
       - ./config/config.yaml:/app/config/config.yaml
-    entrypoint: [ "./entrypoint.sh" ]
+    entrypoint: ["./entrypoint.sh"]
     depends_on:
       db:
         condition: service_healthy
     environment:
       DB_HOST: db
-      GOPROXY: "https://goproxy.cn,direct"
-      GOSUMDB: "off"
-
     healthcheck:
-      test: [ "CMD", "curl", "-f","http://localhost:8080/ping" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+
   db:
     image: postgres:13
     restart: unless-stopped
@@ -40,15 +38,61 @@ services:
     expose:
       - 5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - open_server
 
+  # ── Prometheus ──────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    networks:
+      - open_server
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle          # 允许 POST /-/reload 热加载配置
+      - --web.enable-admin-api
+    depends_on:
+      server:
+        condition: service_healthy
+
+  # ── Grafana ─────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - open_server
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/emotionalbeach.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
 volumes:
   db-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
   open_server:

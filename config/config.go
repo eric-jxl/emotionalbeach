@@ -9,10 +9,15 @@ import (
 )
 
 type ServerConfig struct {
-	Port         int    `mapstructure:"port"`
-	ClientID     string `mapstructure:"clientID"`
-	ClientSecret string `mapstructure:"clientSecret"`
-	EnableRedis  bool   `mapstructure:"enableRedis,default=false"`
+	Port               int    `mapstructure:"port"`
+	ClientID           string `mapstructure:"clientID"`
+	ClientSecret       string `mapstructure:"clientSecret"`
+	JWTSecret          string `mapstructure:"jwtSecret"`
+	EnableRedis        bool   `mapstructure:"enableRedis,default=false"`
+	ReadTimeoutSec     int    `mapstructure:"readTimeoutSec"`
+	WriteTimeoutSec    int    `mapstructure:"writeTimeoutSec"`
+	IdleTimeoutSec     int    `mapstructure:"idleTimeoutSec"`
+	ShutdownTimeoutSec int    `mapstructure:"shutdownTimeoutSec"`
 }
 
 type MailConfig struct {
@@ -55,25 +60,23 @@ type RedisConfig struct {
 	MinIdleConns int    `mapstructure:"min_idle_conns"`
 }
 
+// LogConfig 日志滚动与级别配置
+type LogConfig struct {
+	Level      string `mapstructure:"level"`      // debug | info | warn | error
+	Filename   string `mapstructure:"filename"`   // 留空则只输出控制台
+	MaxSizeMB  int    `mapstructure:"maxSizeMB"`  // 单个日志文件最大 MB
+	MaxBackups int    `mapstructure:"maxBackups"` // 保留旧日志文件个数
+	MaxAgeDays int    `mapstructure:"maxAgeDays"` // 日志保留天数
+	Compress   bool   `mapstructure:"compress"`   // 旧日志是否 gzip 压缩
+}
+
 type Config struct {
 	Server          ServerConfig                      `mapstructure:"server"`
+	Log             LogConfig                         `mapstructure:"log"`
 	MailConfig      MailConfig                        `mapstructure:"mail"`
 	Databases       map[string]map[string]interface{} `mapstructure:"databases"`
 	DefaultDatabase string                            `mapstructure:"default_database"`
 	Redis           RedisConfig                       `mapstructure:"redis"`
-	PgClient        ConnConfig                        `mapstructure:"pg_client"`
-}
-
-type ConnConfig struct {
-	Addr         string        // for trace
-	DSN          string        // write data source name.
-	ReadDSN      []string      // read data source name.
-	Active       int           // pool
-	Idle         int           // pool
-	IdleTimeout  time.Duration // connect max lifetime.
-	QueryTimeout time.Duration // query sql timeout
-	ExecTimeout  time.Duration // execute sql timeout
-	TranTimeout  time.Duration // transaction sql timeout
 }
 
 func LoadConfig() (cfg *Config, err error) {
@@ -81,6 +84,15 @@ func LoadConfig() (cfg *Config, err error) {
 	v.AddConfigPath("config")
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
+	v.SetDefault("server.readTimeoutSec", 15)
+	v.SetDefault("server.writeTimeoutSec", 30)
+	v.SetDefault("server.idleTimeoutSec", 60)
+	v.SetDefault("server.shutdownTimeoutSec", 10)
+	v.SetDefault("log.level", "info")
+	v.SetDefault("log.maxSizeMB", 100)
+	v.SetDefault("log.maxBackups", 5)
+	v.SetDefault("log.maxAgeDays", 30)
+	v.SetDefault("log.compress", true)
 	if err = v.ReadInConfig(); err != nil {
 		return nil, err
 	}

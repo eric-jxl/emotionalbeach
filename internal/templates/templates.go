@@ -7,3 +7,7 @@ var IndexHTML embed.FS
 
 //go:embed assets/*
 var AssetHTML embed.FS
+
+//go:embed swagger_ui.html
+var SwaggerUIHTML embed.FS
+

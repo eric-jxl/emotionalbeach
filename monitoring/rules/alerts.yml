@@ -1,0 +1,70 @@
+groups:
+  - name: emotionalbeach.rules
+    rules:
+
+      # ── 高错误率告警 ────────────────────────────────────────────────────────
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(eb_http_requests_total{status_code=~"5.."}[2m]))
+          /
+          sum(rate(eb_http_requests_total[2m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HTTP 5xx 错误率超过 5%"
+          description: "当前 5xx 错误率 {{ $value | humanizePercentage }}，持续超过 1 分钟。"
+
+      # ── 高延迟告警 ──────────────────────────────────────────────────────────
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(eb_http_request_duration_seconds_bucket[5m])) by (le, path)
+          ) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "接口 P99 延迟超过 2s"
+          description: "路径 {{ $labels.path }} 的 P99 延迟达到 {{ $value | humanizeDuration }}。"
+
+      # ── 数据库健康度告警 ────────────────────────────────────────────────────
+      - alert: DatabaseUnhealthy
+        expr: eb_component_health{component="database"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "数据库不可用"
+          description: "数据库健康探针返回失败，持续超过 30s。"
+
+      # ── Redis 健康度告警 ────────────────────────────────────────────────────
+      - alert: RedisUnhealthy
+        expr: eb_component_health{component="redis"} == 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis 不可用"
+          description: "Redis 健康探针返回失败，持续超过 30s。"
+
+      # ── DB 连接池耗尽预警 ───────────────────────────────────────────────────
+      - alert: DBPoolNearlyExhausted
+        expr: |
+          eb_db_in_use_connections / eb_db_max_open_connections > 0.8
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "DB 连接池使用率超过 80%"
+          description: "当前使用率 {{ $value | humanizePercentage }}，连接池即将耗尽。"
+
+      # ── Panic 告警 ──────────────────────────────────────────────────────────
+      - alert: PanicOccurred
+        expr: increase(eb_http_panics_recovered_total[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "检测到 HTTP Panic"
+          description: "过去 5 分钟内发生 {{ $value }} 次 panic，已自动恢复。"
+

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>情感沙滩 API</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css">
+    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16"/>
+    <style>
+        html { box-sizing: border-box; overflow-y: scroll; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; background: #fafafa; }
+        /* Token 注入提示条 */
+        #token-banner {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            background: #52c41a;
+            color: #fff;
+            text-align: center;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: sans-serif;
+            animation: slideDown .3s ease;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to   { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<div id="token-banner">🔑 已自动注入登录 Token，可直接调用受保护接口</div>
+<div id="swagger-ui"></div>
+
+<script src="./swagger-ui-bundle.js"></script>
+<script src="./swagger-ui-standalone-preset.js"></script>
+<script>
+    window.onload = function () {
+        const token = localStorage.getItem('eb_token') || '';
+
+        const ui = SwaggerUIBundle({
+            url: "/swagger/doc.json",
+            dom_id: '#swagger-ui',
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+            layout: "StandaloneLayout",
+            deepLinking: true,
+            persistAuthorization: true,
+            onComplete: function () {
+                if (token) {
+                    // 注入 Bearer token 到 ApiKeyAuth（与 swagger 注解中的 securityDefinitions 对应）
+                    ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer ' + token);
+
+                    // 显示提示条，3 秒后自动消失
+                    const banner = document.getElementById('token-banner');
+                    banner.style.display = 'block';
+                    setTimeout(function () {
+                        banner.style.display = 'none';
+                    }, 3000);
+                }
+            }
+        });
+        window.ui = ui;
+    };
+</script>
+</body>
+</html>
+

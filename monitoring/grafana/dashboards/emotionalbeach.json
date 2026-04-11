@@ -1,0 +1,280 @@
+{
+  "__inputs": [],
+  "__elements": {},
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "gauge", "name": "Gauge", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" },
+    { "type": "panel", "id": "row", "name": "Row", "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "description": "EmotionalBeach 服务全景监控：接口延迟、健康度、业务指标、DB 连接池、Go 运行时",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 100, "title": "🌐 HTTP 接口概览", "type": "row" },
+
+    {
+      "id": 1, "type": "stat", "title": "请求速率 (req/s)",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area", "orientation": "auto" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 500 }] } } },
+      "targets": [{ "expr": "sum(rate(eb_http_requests_total[1m]))", "legendFormat": "req/s", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 2, "type": "stat", "title": "5xx 错误率",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] } } },
+      "targets": [{ "expr": "sum(rate(eb_http_requests_total{status_code=~\"5..\"}[2m])) / sum(rate(eb_http_requests_total[2m]))", "legendFormat": "5xx 率", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 3, "type": "stat", "title": "4xx 错误率",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.05 }, { "color": "red", "value": 0.2 }] } } },
+      "targets": [{ "expr": "sum(rate(eb_http_requests_total{status_code=~\"4..\"}[2m])) / sum(rate(eb_http_requests_total[2m]))", "legendFormat": "4xx 率", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 4, "type": "stat", "title": "在途请求数",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 20 }, { "color": "red", "value": 100 }] } } },
+      "targets": [{ "expr": "eb_http_requests_in_flight", "legendFormat": "in-flight", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 5, "type": "stat", "title": "Panic 次数 (总计)",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "eb_http_panics_recovered_total", "legendFormat": "panics", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 6, "type": "stat", "title": "Goroutines",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 200 }, { "color": "red", "value": 1000 }] } } },
+      "targets": [{ "expr": "go_goroutines", "legendFormat": "goroutines", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }, "id": 101, "title": "⏱️ 接口延迟分布", "type": "row" },
+
+    {
+      "id": 10, "type": "timeseries", "title": "请求延迟 P50 / P95 / P99（全局）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(eb_http_request_duration_seconds_bucket[2m])) by (le))", "legendFormat": "p50", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "histogram_quantile(0.95, sum(rate(eb_http_request_duration_seconds_bucket[2m])) by (le))", "legendFormat": "p95", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "histogram_quantile(0.99, sum(rate(eb_http_request_duration_seconds_bucket[2m])) by (le))", "legendFormat": "p99", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ]
+    },
+
+    {
+      "id": 11, "type": "timeseries", "title": "各接口请求速率 (req/s)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [{ "expr": "sum(rate(eb_http_requests_total[1m])) by (path, method)", "legendFormat": "{{method}} {{path}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 12, "type": "table", "title": "各接口 P99 延迟排行（慢接口 Top）",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "sortBy": [{ "displayName": "P99 延迟", "desc": true }] },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [{ "matcher": { "id": "byName", "options": "P99 延迟" }, "properties": [{ "id": "custom.width", "value": 120 }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "red", "value": 2 }] } }, { "id": "custom.displayMode", "value": "color-background" }] }] },
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(eb_http_request_duration_seconds_bucket[5m])) by (le, path, method))", "legendFormat": "{{method}} {{path}}", "instant": true, "format": "table", "datasource": { "type": "prometheus", "uid": "prometheus" } }],
+      "transformations": [{ "id": "organize", "options": { "renameByName": { "Value": "P99 延迟", "path": "接口路径", "method": "Method" } } }]
+    },
+
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }, "id": 102, "title": "🏥 服务健康度", "type": "row" },
+
+    {
+      "id": 20, "type": "stat", "title": "数据库健康",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none",
+        "mappings": [{ "type": "value", "options": { "0": { "text": "❌ 故障", "color": "red" }, "1": { "text": "✅ 正常", "color": "green" } } }] },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "targets": [{ "expr": "eb_component_health{component=\"database\"}", "legendFormat": "", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 21, "type": "stat", "title": "Redis 健康",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none",
+        "mappings": [{ "type": "value", "options": { "0": { "text": "❌ 故障", "color": "red" }, "1": { "text": "✅ 正常", "color": "green" } } }] },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "targets": [{ "expr": "eb_component_health{component=\"redis\"}", "legendFormat": "", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 22, "type": "gauge", "title": "DB 探针延迟",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "minValue": 0, "maxValue": 100 },
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 20 }, { "color": "red", "value": 100 }] } } },
+      "targets": [{ "expr": "eb_component_probe_latency_ms{component=\"database\"}", "legendFormat": "DB 延迟", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 23, "type": "gauge", "title": "Redis 探针延迟",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "minValue": 0, "maxValue": 50 },
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } } },
+      "targets": [{ "expr": "eb_component_probe_latency_ms{component=\"redis\"}", "legendFormat": "Redis 延迟", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 24, "type": "timeseries", "title": "组件健康度历史趋势",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "max": 1, "custom": { "lineWidth": 2, "fillOpacity": 20 } } },
+      "targets": [
+        { "expr": "eb_component_health{component=\"database\"}", "legendFormat": "数据库", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "eb_component_health{component=\"redis\"}", "legendFormat": "Redis", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ]
+    },
+
+    {
+      "id": 25, "type": "timeseries", "title": "堆内存用量",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "unit": "decmbytes", "custom": { "lineWidth": 2, "fillOpacity": 15 } } },
+      "targets": [
+        { "expr": "eb_runtime_mem_alloc_mb", "legendFormat": "Heap Alloc (MB)", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "go_memstats_sys_bytes / 1024 / 1024", "legendFormat": "System Mem (MB)", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ]
+    },
+
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 }, "id": 103, "title": "📊 业务指标", "type": "row" },
+
+    {
+      "id": 30, "type": "timeseries", "title": "用户登录趋势（按结果分类）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] } },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "sum(rate(eb_user_logins_total[2m])) by (status)", "legendFormat": "{{status}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 31, "type": "timeseries", "title": "好友添加趋势（按结果分类）",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] } },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [{ "expr": "sum(rate(eb_relation_friend_add_total[2m])) by (status)", "legendFormat": "{{status}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 32, "type": "stat", "title": "累计注册用户数",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "targets": [{ "expr": "eb_user_registrations_total", "legendFormat": "注册数", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 33, "type": "stat", "title": "累计邮件发送（成功）",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "targets": [{ "expr": "eb_notification_emails_sent_total{status=\"success\"}", "legendFormat": "成功", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 34, "type": "stat", "title": "邮件发送失败数",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "eb_notification_emails_sent_total{status=\"failure\"}", "legendFormat": "失败", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    {
+      "id": 35, "type": "stat", "title": "累计邮件收件人数",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [{ "expr": "eb_notification_email_receivers_total", "legendFormat": "收件人", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    },
+
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 }, "id": 104, "title": "🗄️ 数据库连接池", "type": "row" },
+
+    {
+      "id": 40, "type": "timeseries", "title": "连接数（打开 / 使用中 / 空闲）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 47 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] } },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "targets": [
+        { "expr": "eb_db_open_connections", "legendFormat": "总打开", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "eb_db_in_use_connections", "legendFormat": "使用中", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "eb_db_idle_connections", "legendFormat": "空闲", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ]
+    },
+
+    {
+      "id": 41, "type": "timeseries", "title": "连接等待次数 & 时长",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 47 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [{ "matcher": { "id": "byName", "options": "等待时长 (s)" }, "properties": [{ "id": "unit", "value": "s" }, { "id": "custom.axisPlacement", "value": "right" }] }] },
+      "targets": [
+        { "expr": "rate(eb_db_wait_count_total[1m])", "legendFormat": "等待次数/s", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "rate(eb_db_wait_duration_seconds_total[1m])", "legendFormat": "等待时长 (s)", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ]
+    },
+
+    {
+      "id": 42, "type": "gauge", "title": "连接池使用率",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "minValue": 0, "maxValue": 100 },
+      "fieldConfig": { "defaults": { "unit": "percent", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 80 }] } } },
+      "targets": [{ "expr": "eb_db_in_use_connections / eb_db_max_open_connections * 100", "legendFormat": "使用率", "datasource": { "type": "prometheus", "uid": "prometheus" } }]
+    }
+
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["emotionalbeach", "go", "gin", "prometheus"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EmotionalBeach 全景监控",
+  "uid": "emotionalbeach-main",
+  "version": 1
+}
+

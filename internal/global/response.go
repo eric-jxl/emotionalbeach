@@ -23,7 +23,3 @@ func Success(c *gin.Context, data interface{}) {
 func Error(c *gin.Context, code int, message string) {
 	RespJson(c, code, message, nil)
 }
-
-func Fatal(c *gin.Context, message string) {
-	RespJson(c, http.StatusInternalServerError, message, nil)
-}

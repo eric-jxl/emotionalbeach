@@ -4,6 +4,8 @@ import (
 	"emotionalBeach/internal/global"
 	"errors"
 	"net/http"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,8 +14,37 @@ import (
 )
 
 var (
-	jwtSecret = []byte("emotionBeach")
+	jwtSecret     = []byte("emotionBeach")
+	jwtSecretLock sync.RWMutex
 )
+
+// SetJWTSecret 使用配置下发 JWT 密钥；空值会被忽略，避免将密钥置空。
+func SetJWTSecret(secret string) {
+	if strings.TrimSpace(secret) == "" {
+		return
+	}
+	jwtSecretLock.Lock()
+	jwtSecret = []byte(secret)
+	jwtSecretLock.Unlock()
+}
+
+func currentJWTSecret() []byte {
+	jwtSecretLock.RLock()
+	defer jwtSecretLock.RUnlock()
+	return jwtSecret
+}
+
+func extractToken(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	parts := strings.SplitN(raw, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return strings.TrimSpace(parts[1])
+	}
+	return raw
+}
 
 // Claims 是一些实体（通常指的用户）的状态和额外的元数据
 type Claims struct {
@@ -35,13 +66,13 @@ func GenerateToken(userId uint, iss string) (string, error) {
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// 该方法内部生成签名字符串，再用于获取完整、已签名的token
-	token, err := tokenClaims.SignedString(jwtSecret)
+	token, err := tokenClaims.SignedString(currentJWTSecret())
 	return token, err
 }
 
 func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
+		token := extractToken(c.GetHeader("Authorization"))
 		if token == "" {
 			global.Error(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
 			c.Abort()
@@ -71,7 +102,10 @@ func ParseToken(token string) (*Claims, error) {
 
 	//用于解析鉴权的声明，方法内部主要是具体的解码和校验的过程，最终返回*Token
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return currentJWTSecret(), nil
 	})
 
 	if tokenClaims != nil {

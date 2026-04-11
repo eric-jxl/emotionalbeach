@@ -24,13 +24,7 @@ const docTemplate = `{
     "paths": {
         "/callback": {
             "get": {
-                "description": "GitHub 授权成功回调接口",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/x-www-form-urlencoded"
-                ],
+                "description": "GitHub 授权成功回调，换取 access_token 并获取用户信息",
                 "tags": [
                     "注册登陆"
                 ],
@@ -38,9 +32,35 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/health": {
+            "get": {
+                "description": "返回服务整体状态、各子系统（DB / Redis）连通性及运行时指标",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "服务健康",
+                        "schema": {
+                            "$ref": "#/definitions/healthsvc.Report"
+                        }
+                    },
+                    "503": {
+                        "description": "服务降级",
+                        "schema": {
+                            "$ref": "#/definitions/healthsvc.Report"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
-                "description": "根据用户名、密码获取授权码",
+                "description": "根据用户名、密码获取授权 JWT",
                 "consumes": [
                     "application/json"
                 ],
@@ -50,7 +70,7 @@ const docTemplate = `{
                 "tags": [
                     "注册登陆"
                 ],
-                "summary": "登陆获取Token",
+                "summary": "登陆获取 Token",
                 "parameters": [
                     {
                         "description": "登录参数",
@@ -67,13 +87,7 @@ const docTemplate = `{
         },
         "/login/github": {
             "get": {
-                "description": "GitHub 一键授权登录",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/x-www-form-urlencoded"
-                ],
+                "description": "GitHub 一键授权登录，重定向到 GitHub OAuth 页面",
                 "tags": [
                     "注册登陆"
                 ],
@@ -83,7 +97,7 @@ const docTemplate = `{
         },
         "/register": {
             "post": {
-                "description": "根据名称、密码、二次密码、手机号、邮箱(可选)注册",
+                "description": "根据名称、密码、手机号、邮箱注册",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -127,8 +141,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "EMAIL",
                         "name": "email",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
@@ -141,7 +154,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据标题、内容、邮箱发送邮件到指定邮箱号",
+                "description": "根据标题、内容、邮箱列表异步发送邮件",
                 "consumes": [
                     "application/json"
                 ],
@@ -151,7 +164,7 @@ const docTemplate = `{
                 "tags": [
                     "API"
                 ],
-                "summary": "Webhook对外接口",
+                "summary": "Webhook 对外接口",
                 "parameters": [
                     {
                         "description": "请求参数",
@@ -159,7 +172,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/service.WebhookMessage"
+                            "$ref": "#/definitions/webhookhandler.message"
                         }
                     }
                 ],
@@ -173,7 +186,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "通过昵称加好友",
+                "description": "通过 userId + targetName（昵称）或 targetName（纯数字当 ID）添加好友",
                 "produces": [
                     "application/json"
                 ],
@@ -184,8 +197,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "增加的用户id",
+                        "description": "发起方用户 ID",
                         "name": "userId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "目标昵称或目标用户 ID",
+                        "name": "targetName",
                         "in": "formData"
                     }
                 ],
@@ -210,7 +229,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "好友ID",
+                        "description": "用户 ID",
                         "name": "userId",
                         "in": "formData",
                         "required": true
@@ -226,18 +245,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量获取所有用户信息",
+                "description": "通过 id / phone / email 查询单个用户",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "用户"
                 ],
-                "summary": "获取所有用户",
+                "summary": "按条件查询用户",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID",
+                        "description": "用户 ID",
                         "name": "id",
                         "in": "query"
                     },
@@ -264,7 +283,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除用户",
+                "description": "软删除用户（需 DELETE 方法）",
                 "produces": [
                     "application/json"
                 ],
@@ -309,7 +328,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新用户信息",
+                "description": "更新用户信息（仅更新非空字段）",
                 "produces": [
                     "application/json"
                 ],
@@ -367,6 +386,92 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "healthsvc.ComponentStatus": {
+            "type": "object",
+            "properties": {
+                "latency_ms": {
+                    "type": "number"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "healthsvc.DBPoolStats": {
+            "type": "object",
+            "properties": {
+                "idle": {
+                    "type": "integer"
+                },
+                "in_use": {
+                    "type": "integer"
+                },
+                "max_idle_closed": {
+                    "type": "integer"
+                },
+                "max_lifetime_closed": {
+                    "type": "integer"
+                },
+                "max_open": {
+                    "type": "integer"
+                },
+                "open_connections": {
+                    "type": "integer"
+                },
+                "wait_count": {
+                    "type": "integer"
+                },
+                "wait_duration": {
+                    "type": "string"
+                }
+            }
+        },
+        "healthsvc.MemStats": {
+            "type": "object",
+            "properties": {
+                "alloc_mb": {
+                    "type": "number"
+                },
+                "num_gc": {
+                    "type": "integer"
+                },
+                "sys_mb": {
+                    "type": "number"
+                }
+            }
+        },
+        "healthsvc.Report": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/healthsvc.ComponentStatus"
+                    }
+                },
+                "db_pool": {
+                    "$ref": "#/definitions/healthsvc.DBPoolStats"
+                },
+                "go_version": {
+                    "type": "string"
+                },
+                "goroutines": {
+                    "type": "integer"
+                },
+                "memory": {
+                    "$ref": "#/definitions/healthsvc.MemStats"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
+        },
         "models.LoginRequest": {
             "type": "object",
             "required": [
@@ -382,7 +487,7 @@ const docTemplate = `{
                 }
             }
         },
-        "service.WebhookMessage": {
+        "webhookhandler.message": {
             "type": "object",
             "required": [
                 "title"
@@ -392,7 +497,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "receivers": {
-                    "description": "支持多个收件人",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -419,8 +523,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "情感沙滩API",
-	Description:      "```\nDevelopment Environment :go v1.23.7 + gin v1.10.1 + gorm v1.30.2 + viper v1.20.1\n```",
+	Title:            "情感沙滩 API",
+	Description:      "Development Environment: go v1.23.7 + gin v1.10.1 + gorm v1.30.2 + viper v1.20.1",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
