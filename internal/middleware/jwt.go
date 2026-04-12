@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"emotionalBeach/internal/global"
+	"emotionalBeach/internal/common"
 	"errors"
 	"net/http"
 	"strings"
@@ -157,7 +157,7 @@ func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := extractToken(c.GetHeader("Authorization"))
 		if token == "" {
-			global.Error(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
+			common.Fail(c, http.StatusUnauthorized, "认证信息(Authorization)不能为空!")
 			c.Abort()
 			return
 		}
@@ -166,13 +166,13 @@ func AuthJwt() gin.HandlerFunc {
 		if err != nil || claims == nil || claims.UserID == 0 {
 			switch {
 			case errors.Is(err, jwt.ErrTokenExpired):
-				global.Error(c, http.StatusUnauthorized, "Token已过期，请重新登录")
+				common.Fail(c, http.StatusUnauthorized, "Token已过期，请重新登录")
 			case errors.Is(err, jwt.ErrTokenMalformed):
-				global.Error(c, http.StatusUnauthorized, "Token格式无效")
+				common.Fail(c, http.StatusUnauthorized, "Token格式无效")
 			case errors.Is(err, jwt.ErrTokenSignatureInvalid):
-				global.Error(c, http.StatusUnauthorized, "Token签名无效")
+				common.Fail(c, http.StatusUnauthorized, "Token签名无效")
 			default:
-				global.Error(c, http.StatusUnauthorized, "无效的认证信息")
+				common.Fail(c, http.StatusUnauthorized, "无效的认证信息")
 			}
 			zap.S().Infow("token认证失败", zap.Error(err))
 			c.Abort()

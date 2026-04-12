@@ -8,8 +8,7 @@
 
 ## 📋 项目概览
 
-**emotionalBeach** 是一个基于 Go 语言的后端 API 服务，使用 **Gin** 框架构建，集成了用户认证、好友关系管理、邮件通知等功能。  
-项目已完成**全面架构重构**，引入 **Google Wire** 依赖注入、领域驱动分层设计和优雅启停机制，彻底消除了全局可变状态。
+**emotionalBeach** 是一个基于 Go 语言的后端 API 服务，使用 **Gin** 框架构建，集成了用户认证、好友关系管理、邮件通知等功能。
 
 **开发环境：** Go v1.24 + Gin v1.10.1 + GORM v1.30.2 + Viper v1.20.1 + Wire v0.7.0
 
@@ -20,91 +19,105 @@
 | ✅ 用户认证系统 | 用户名/密码登录 + GitHub OAuth 一键登录 |
 | ✅ 好友关系管理 | 添加好友（ID / 昵称）、获取好友列表 |
 | ✅ JWT Token 认证 | 7 天有效期，Bearer 格式，配置注入密钥 |
-| ✅ Swagger 自动注入 Token | 登录页登录后自动写入 `localStorage`，Swagger UI 打开即完成 ApiKeyAuth 授权 |
+| ✅ 内嵌登录页 | 密码 / 验证码 / 扫码三种登录方式 UI，登录后自动跳转 Swagger |
+| ✅ Swagger 自动注入 Token | 登录后自动写入 `localStorage`，Swagger UI 打开即完成 ApiKeyAuth 授权 |
 | ✅ 邮件通知服务 | 多收件人、HTML 内容，配置驱动（无环境变量依赖） |
 | ✅ Redis 缓存 | 启动时预热，可通过配置开关 |
 | ✅ IP 限流保护 | 令牌桶算法，防止滥用 |
 | ✅ Prometheus 指标 | `/metrics` 端点，开箱即用 |
 | ✅ Swagger API 文档 | 自动生成，`/swagger/index.html` 访问 |
 | ✅ 多数据库支持 | PostgreSQL / MySQL 配置热切换 |
-| ✅ 优雅启停 | `SIGINT/SIGTERM` 信号驱动，顺序关闭 HTTP → DB → Redis → Logger |
+| ✅ 优雅启停 | `SIGINT/SIGTERM` 信号驱动，Wire cleanup 顺序关闭 HTTP → DB → Redis → Logger |
 
 ---
 
 ## 🏗️ 架构设计
 
-### 重构亮点
-
-| 项目 | 重构前 | 重构后 |
-|------|--------|--------|
-| 依赖管理 | 全局变量（`initialize.MainDB`、`global.RedisClient`） | **Google Wire** 编译期依赖注入 |
-| 服务生命周期 | `main.go` 手动拼装，关停逻辑分散 | `App.Run()` / `App.shutdown()` 统一管理 |
-| 路由注册 | 单文件硬编码所有路由 | 各 Handler 自带 `RegisterRoutes()` 模块注册 |
-| 数据访问层 | 包级函数直接依赖全局 DB | `Repository` 接口 + GORM 实现，通过构造注入 |
-| 业务逻辑层 | Controller 中混杂业务逻辑 | `Service` 接口 + 纯业务实现，Handler 只做参数绑定和响应 |
-| 日志中间件 | 依赖 `initialize.AccessLogger` 全局变量 | `ZapLogger(accessLogger)` 工厂注入 |
-| 配置与密钥 | `os.Getenv()` 散落各处 | 统一从 `config.Config` 注入，无隐式环境变量 |
-
 ### 分层依赖图
 
 ```
 main.go
-  └── app.InitializeApp(cfg)          ← Wire 编译期生成
-        ├── infra/db     → *gorm.DB, *redis.Client
-        ├── infra/logger → *Loggers (Sys + Access)
-        ├── repository/  → 实现 domain.Repository 接口
-        ├── service/     → 实现 domain.Service  接口
-        ├── handler/     → 组合 Service，注册路由
-        ├── server/      → *gin.Engine, *http.Server
-        └── App          → Run() / shutdown()
+  └── di.InitializeApp(cfg)           ← Wire 编译期注入（5 个 Provider）
+        ├── infra.Provider            → *gorm.DB, *redis.Client, *Loggers
+        ├── dao.Provider              → dao.Dao（统一数据访问接口）
+        ├── service.Provider          → *service.Service（所有业务能力）
+        ├── server.New                → *http.Server（含所有路由和 Handler）
+        └── di.NewApp                 → *App → Run()
+```
+
+### Wire 注入（极简 5 Provider）
+
+```go
+// internal/di/wire.go
+func InitializeApp(cfg *config.Config) (*App, func(), error) {
+    panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, NewApp))
+}
+```
+
+### 统一 API 响应格式
+
+所有接口统一使用 `internal/common` 包中的**三个**函数封装返回：
+
+| 函数 | 场景 | HTTP 状态 | `code` 字段 |
+|------|------|-----------|-------------|
+| `common.Success(c, data)` | 请求成功 | 200 | `0` |
+| `common.Fail(c, httpStatus, msg)` | 业务失败（参数错误、鉴权失败等 4xx） | 传入值（4xx） | 同 HTTP 状态码 |
+| `common.ServerError(c, msg)` | 服务内部错误（5xx） | 500 | `500` |
+
+```json
+// ✅ 成功 — common.Success(c, data)
+{ "code": 200, "message": "success", "data": { ... } }
+
+// ⚠️ 业务失败 — common.Fail(c, 400, "msg")
+{ "code": 400, "message": "手机号必须为 11 位" }
+
+// ❌ 服务错误 — common.ServerError(c, "msg")
+{ "code": 500, "message": "修改信息失败: ..." }
 ```
 
 ### 目录结构
 
 ```
 emotionalbeach/
-├── main.go                        # 极简入口：加载配置 → Wire → App.Run()
-├── config/
-│   ├── config.go                  # 配置结构体定义
-│   └── config.yaml                # 配置文件（数据库/Redis/日志/服务器）
+├── main.go                          # 极简入口：加载配置 → Wire → App.Run()
+├── config/config.go + config.yaml   # 配置结构体 + 配置文件
 ├── internal/
-│   ├── app/
-│   │   ├── app.go                 # App 结构体：Run() 优雅启停，shutdown() 顺序关闭
-│   │   ├── wire.go                # Wire 注入器声明（wireinject build tag）
-│   │   └── wire_gen.go            # Wire 自动生成，勿手动修改
-│   ├── domain/                    # 领域契约层（接口定义，零依赖）
-│   │   ├── user/interfaces.go     # UserRepository / UserService / UpdateRequest
-│   │   └── relation/interfaces.go # RelationRepository / RelationService
-│   ├── infra/                     # 基础设施层（Wire Provider）
-│   │   ├── db/provider.go         # ProvideDB(*gorm.DB) + ProvideRedis(*redis.Client)
-│   │   ├── logger/provider.go     # ProvideLoggers(*Loggers{Sys,Access})
-│   │   ├── metrics/               # Prometheus 指标定义 + DB 连接池 Collector
-│   │   └── cache/preload.go       # Redis 启动预热
-│   ├── repository/                # 数据访问实现层
-│   │   ├── user/gorm_repo.go      # 实现 domain/user.Repository（GORM）
-│   │   └── relation/gorm_repo.go  # 实现 domain/relation.Repository（GORM）
-│   ├── service/                   # 业务逻辑实现层
-│   │   ├── user/svc.go            # 实现 domain/user.Service
-│   │   ├── relation/svc.go        # 实现 domain/relation.Service
-│   │   ├── github/svc.go          # GitHub OAuth 流程封装
-│   │   ├── health/svc.go          # 深度健康检查（DB + Redis 探活）
-│   │   └── notification/email.go  # SMTP 邮件发送（配置注入，无 os.Getenv）
-│   ├── handler/                   # HTTP 表现层（仅参数绑定 + 响应）
-│   │   ├── user/                  # handler.go + routes.go
-│   │   ├── relation/              # handler.go + routes.go
-│   │   ├── github/                # handler.go + routes.go
-│   │   ├── health/                # handler.go + routes.go
-│   │   └── webhook/               # handler.go + routes.go
-│   ├── server/
-│   │   ├── router.go              # 组合所有 Handler，装配 *gin.Engine（依赖注入）
-│   │   └── server.go              # 构建 *http.Server（超时配置注入）
-│   ├── middleware/                # 中间件（JWT、限流、结构化日志、Prometheus）
-│   ├── models/                    # GORM 数据模型（UserBasic、Relation）
-│   ├── common/                    # 纯函数工具（MD5、手机号校验）
-│   ├── global/                    # HTTP 统一响应工具（RespJson / Success / Error）
-│   └── templates/                 # 嵌入式前端模板（登录页、Swagger UI、静态资源）
-├── docs/                          # Swagger 自动生成文档
-└── monitoring/                    # Prometheus + Grafana 监控配置
+│   ├── di/
+│   │   ├── wire.go                  # Wire 注入器（wireinject build tag）
+│   │   ├── wire_gen.go              # Wire 自动生成，勿手动修改
+│   │   └── app.go                   # App 结构体：Run() 优雅启停
+│   ├── infra/                       # 基础设施（单一扁平包）
+│   │   ├── infra.go                 # Provider = wire.NewSet(dbSet, loggerSet)
+│   │   ├── db.go                    # ProvideDB + ProvideRedis
+│   │   ├── logger.go                # ProvideLoggers + Loggers 类型
+│   │   ├── metrics.go               # Prometheus 指标定义 + DB Pool Collector
+│   │   └── startup.go               # AutoMigrate / CachePreload / RegisterCollectors
+│   ├── dao/                         # 统一数据访问层
+│   │   ├── dao.go                   # Dao 接口 + dao struct + Provider
+│   │   ├── user.go                  # User GORM 查询实现
+│   │   └── relation.go              # Relation GORM 查询实现
+│   ├── service/                     # 统一业务逻辑层
+│   │   ├── service.go               # Service struct + New() + Provider
+│   │   ├── user.go                  # 用户业务方法
+│   │   ├── relation.go              # 关系业务方法
+│   │   ├── github.go                # GitHub OAuth 方法
+│   │   ├── health.go                # 健康检查方法 + 类型定义
+│   │   └── email.go                 # 邮件发送方法
+│   ├── server/                      # HTTP 层（arip-samp 风格，package-level svc）
+│   │   ├── server.go                # var svc + New() + initRouter()
+│   │   ├── user.go                  # 用户 Handler 函数
+│   │   ├── relation.go              # 关系 Handler 函数
+│   │   ├── github.go                # GitHub Handler 函数
+│   │   ├── health.go                # 健康检查 Handler 函数
+│   │   └── webhook.go               # Webhook/Email Handler 函数
+│   ├── middleware/                  # 中间件（JWT、限流、日志、Prometheus）
+│   ├── models/                      # GORM 数据模型（UserBasic、Relation）
+│   ├── common/                      # 纯函数工具包
+│   │   ├── md5.go                   # MD5、密码加盐、手机号校验
+│   │   └── response.go              # 统一 HTTP 响应：Success / Fail / ServerError
+│   └── templates/                   # 嵌入式前端（登录页、Swagger UI、静态资源）
+├── docs/                            # Swagger 自动生成文档
+└── monitoring/                      # Prometheus + Grafana 监控配置
 ```
 
 ---
@@ -131,13 +144,8 @@ docker pull ghcr.io/eric-jxl/emotionalbeach:latest
 ### 1. 环境准备
 
 ```bash
-# 下载依赖
 go mod download
-
-# 安装 Wire 代码生成工具
 go install github.com/google/wire/cmd/wire@latest
-
-# 安装 Swagger 文档生成工具
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
@@ -149,14 +157,14 @@ go install github.com/swaggo/swag/cmd/swag@latest
 server:
   port: 8080
   jwtSecret: "your-secret-key"
-  clientID: "github-client-id"       # GitHub OAuth
+  clientID: "github-client-id"
   clientSecret: "github-client-secret"
   enableRedis: true
   shutdownTimeoutSec: 10
 
 databases:
   main:
-    type: postgres                    # 或 mysql
+    type: postgres          # 或 mysql
     host: localhost
     port: 5432
     user: postgres
@@ -173,30 +181,21 @@ mail:
 ### 3. 数据库迁移
 
 ```bash
-# 首次运行，自动建表后退出
 go run main.go -migrate
 ```
 
 ### 4. 运行服务
 
 ```bash
-# 直接运行
-go run main.go
-
-# 编译后运行
-make all
-./emotionalBeach
-
-# Docker Compose
+go run main.go      # 直接运行
+make all            # 编译 + upx 压缩
 docker compose up -d
 ```
 
 ### 5. 重新生成 Wire 注入代码
 
-当新增 Provider 或修改依赖图时，重新生成 `wire_gen.go`：
-
 ```bash
-wire gen ./internal/app/...
+wire gen ./internal/di/...
 ```
 
 ### 6. 生成 Swagger 文档
@@ -207,38 +206,26 @@ make gen
 swag init -o ./docs -g main.go
 ```
 
-### 7. 常用 Make 命令
-
-```bash
-make all   # 编译 + upx 压缩
-make gen   # 生成 Swagger 文档
-```
-
 ---
 
-## 🔑 Swagger 自动 Token 注入
+## 🔑 登录 & Swagger 自动 Token 注入
 
-登录页（`/`）支持**一次登录，Swagger 自动授权**，无需手动粘贴 Token：
+服务内置了一个完整的登录页面（`/`），支持三种登录方式：
+
+| 方式 | 说明 |
+|------|------|
+| 密码登录 | 输入手机号 / 邮箱 + 密码，点击登录 |
+| 验证码登录 | 手机号 + 短信验证码（待接入短信服务） |
+| 扫码登录 | 预留入口（待实现） |
+
+登录成功后的完整流程：
 
 ```
-打开登录页 /
-  ↓ 输入账号密码，点击登录
-POST /login → 返回 JWT Token
-  ↓
-Token 自动写入 localStorage（键名：eb_token）
-  ↓
-跳转 /swagger/index.html
-  ↓
-Swagger UI 初始化完成（onComplete）
-  ↓
-ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer <token>')
-  ↓
-顶部绿色提示条：🔑 已自动注入登录 Token ✅
-所有受保护接口可直接调用，无需手动填写 Authorization
+打开 /  →  输入账号密码  →  POST /login 返回 JWT
+  → Token 自动写入 localStorage  →  跳转 /swagger/index.html
+  → Swagger UI 自动完成 ApiKeyAuth 授权（顶部绿色提示）
+  → 所有受保护接口可直接调用，无需手动填写 Authorization
 ```
-
-> Token 通过 `persistAuthorization: true` 持久化，刷新页面不丢失。  
-> 若需切换用户，点击 Swagger UI 右上角 **Authorize** 按钮重新授权即可。
 
 ---
 
@@ -277,7 +264,7 @@ ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer <token>')
 | GET | `/ping` | 快速存活检查 |
 | GET | `/health` | 深度健康检查（DB + Redis 状态） |
 | GET | `/metrics` | Prometheus 指标抓取 |
-| GET | `/swagger/*` | Swagger 交互式文档（含自动 Token 注入） |
+| GET | `/swagger/*` | Swagger 交互式文档 |
 
 ---
 
@@ -286,7 +273,7 @@ ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer <token>')
 | 特性 | 实现方式 |
 |------|----------|
 | 密码加密 | MD5 + 随机盐值（`common.SaltPassWord`） |
-| JWT 认证 | HS256，7 天有效期，密钥从配置注入（无全局写入竞态） |
+| JWT 认证 | HS256，7 天有效期，密钥从配置注入 |
 | IP 限流 | 令牌桶，10 秒内最多 5 次（可配置） |
 | 结构化日志 | Zap + Lumberjack 滚动，控制台彩色 + JSON 文件双输出 |
 | 请求追踪 | 每个请求自动注入 `X-Request-Id` |
@@ -304,7 +291,6 @@ ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer <token>')
 | Redis (go-redis) | v9.17.2 | 缓存层 |
 | Viper | v1.20.1 | 配置管理 |
 | Zap | v1.27.1 | 结构化日志 |
-| Lumberjack | v2.2.1 | 日志轮转 |
 | Prometheus | latest | 可观测性指标 |
 | Swagger (swag) | v1.16.6 | API 文档生成 |
 
@@ -316,14 +302,6 @@ ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer <token>')
 - [📄 英文项目结构文档](./docs/PROJECT_STRUCTURE_EN.md)
 - [📋 中文 API 接口文档](./docs/API_DOCS_CN.md)
 - [📋 英文 API 接口文档](./docs/API_DOCS_EN.md)
-- [📚 文档索引导航](./docs/INDEX.md)
-- [📋 快速参考](./docs/QUICK_REFERENCE.md)
-
----
-
-## 📞 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
 
 ---
 

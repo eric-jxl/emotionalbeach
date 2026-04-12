@@ -1,6 +1,29 @@
 basePath: /
 definitions:
-  healthsvc.ComponentStatus:
+  models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  server.webhookMessage:
+    properties:
+      content:
+        type: string
+      receivers:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  service.ComponentStatus:
     properties:
       latency_ms:
         type: number
@@ -9,7 +32,7 @@ definitions:
       status:
         type: string
     type: object
-  healthsvc.DBPoolStats:
+  service.DBPoolStats:
     properties:
       idle:
         type: integer
@@ -28,7 +51,26 @@ definitions:
       wait_duration:
         type: string
     type: object
-  healthsvc.MemStats:
+  service.HealthReport:
+    properties:
+      components:
+        additionalProperties:
+          $ref: '#/definitions/service.ComponentStatus'
+        type: object
+      db_pool:
+        $ref: '#/definitions/service.DBPoolStats'
+      go_version:
+        type: string
+      goroutines:
+        type: integer
+      memory:
+        $ref: '#/definitions/service.MemStats'
+      status:
+        type: string
+      uptime:
+        type: string
+    type: object
+  service.MemStats:
     properties:
       alloc_mb:
         type: number
@@ -36,48 +78,6 @@ definitions:
         type: integer
       sys_mb:
         type: number
-    type: object
-  healthsvc.Report:
-    properties:
-      components:
-        additionalProperties:
-          $ref: '#/definitions/healthsvc.ComponentStatus'
-        type: object
-      db_pool:
-        $ref: '#/definitions/healthsvc.DBPoolStats'
-      go_version:
-        type: string
-      goroutines:
-        type: integer
-      memory:
-        $ref: '#/definitions/healthsvc.MemStats'
-      status:
-        type: string
-      uptime:
-        type: string
-    type: object
-  models.LoginRequest:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  webhookhandler.message:
-    properties:
-      content:
-        type: string
-      receivers:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-    required:
-    - title
     type: object
 info:
   contact:
@@ -93,25 +93,23 @@ info:
 paths:
   /callback:
     get:
-      description: GitHub 授权成功回调，换取 access_token 并获取用户信息
       responses: {}
       summary: GitHub 回调接口
       tags:
       - 注册登陆
   /health:
     get:
-      description: 返回服务整体状态、各子系统（DB / Redis）连通性及运行时指标
       produces:
       - application/json
       responses:
         "200":
           description: 服务健康
           schema:
-            $ref: '#/definitions/healthsvc.Report'
+            $ref: '#/definitions/service.HealthReport'
         "503":
           description: 服务降级
           schema:
-            $ref: '#/definitions/healthsvc.Report'
+            $ref: '#/definitions/service.HealthReport'
       summary: 健康检查
       tags:
       - 系统
@@ -119,7 +117,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: 根据用户名、密码获取授权 JWT
       parameters:
       - description: 登录参数
         in: body
@@ -135,7 +132,6 @@ paths:
       - 注册登陆
   /login/github:
     get:
-      description: GitHub 一键授权登录，重定向到 GitHub OAuth 页面
       responses: {}
       summary: GitHub 登录
       tags:
@@ -144,7 +140,6 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: 根据名称、密码、手机号、邮箱注册
       parameters:
       - description: Name
         in: formData
@@ -180,14 +175,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: 根据标题、内容、邮箱列表异步发送邮件
       parameters:
       - description: 请求参数
         in: body
         name: message
         required: true
         schema:
-          $ref: '#/definitions/webhookhandler.message'
+          $ref: '#/definitions/server.webhookMessage'
       produces:
       - application/json
       responses: {}
@@ -198,7 +192,6 @@ paths:
       - API
   /v1/relation/add:
     post:
-      description: 通过 userId + targetName（昵称）或 targetName（纯数字当 ID）添加好友
       parameters:
       - description: 发起方用户 ID
         in: formData
@@ -218,7 +211,6 @@ paths:
       - 好友关系
   /v1/relation/list:
     post:
-      description: 批量获取好友列表信息
       parameters:
       - description: 用户 ID
         in: formData
@@ -235,7 +227,6 @@ paths:
       - 好友关系
   /v1/user/condition:
     get:
-      description: 通过 id / phone / email 查询单个用户
       parameters:
       - description: 用户 ID
         in: query
@@ -259,7 +250,6 @@ paths:
       - 用户
   /v1/user/delete:
     delete:
-      description: 软删除用户（需 DELETE 方法）
       parameters:
       - description: ID
         in: query
@@ -276,7 +266,6 @@ paths:
       - 用户
   /v1/user/list:
     get:
-      description: 批量获取所有用户信息
       produces:
       - application/json
       responses: {}
@@ -287,7 +276,6 @@ paths:
       - 用户
   /v1/user/update:
     post:
-      description: 更新用户信息（仅更新非空字段）
       parameters:
       - description: ID
         in: formData

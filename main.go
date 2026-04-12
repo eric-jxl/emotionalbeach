@@ -2,7 +2,7 @@ package main
 
 import (
 	"emotionalBeach/config"
-	"emotionalBeach/internal/app"
+	"emotionalBeach/internal/di"
 	"log"
 
 	"go.uber.org/zap"
@@ -36,7 +36,7 @@ func main() {
 	// Phase 3: wire up the full application graph.
 	// InitializeApp replaces the logger with the fully-configured one,
 	// initialises DB/Redis, builds the HTTP server, and returns a cleanup func.
-	application, cleanup, err := app.InitializeApp(cfg)
+	application, cleanup, err := di.InitializeApp(cfg)
 	if err != nil {
 		zap.S().Fatalf("❌ initialize app failed: %v", err)
 	}

@@ -24,7 +24,6 @@ const docTemplate = `{
     "paths": {
         "/callback": {
             "get": {
-                "description": "GitHub 授权成功回调，换取 access_token 并获取用户信息",
                 "tags": [
                     "注册登陆"
                 ],
@@ -34,7 +33,6 @@ const docTemplate = `{
         },
         "/health": {
             "get": {
-                "description": "返回服务整体状态、各子系统（DB / Redis）连通性及运行时指标",
                 "produces": [
                     "application/json"
                 ],
@@ -46,13 +44,13 @@ const docTemplate = `{
                     "200": {
                         "description": "服务健康",
                         "schema": {
-                            "$ref": "#/definitions/healthsvc.Report"
+                            "$ref": "#/definitions/service.HealthReport"
                         }
                     },
                     "503": {
                         "description": "服务降级",
                         "schema": {
-                            "$ref": "#/definitions/healthsvc.Report"
+                            "$ref": "#/definitions/service.HealthReport"
                         }
                     }
                 }
@@ -60,7 +58,6 @@ const docTemplate = `{
         },
         "/login": {
             "post": {
-                "description": "根据用户名、密码获取授权 JWT",
                 "consumes": [
                     "application/json"
                 ],
@@ -87,7 +84,6 @@ const docTemplate = `{
         },
         "/login/github": {
             "get": {
-                "description": "GitHub 一键授权登录，重定向到 GitHub OAuth 页面",
                 "tags": [
                     "注册登陆"
                 ],
@@ -97,7 +93,6 @@ const docTemplate = `{
         },
         "/register": {
             "post": {
-                "description": "根据名称、密码、手机号、邮箱注册",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -154,7 +149,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据标题、内容、邮箱列表异步发送邮件",
                 "consumes": [
                     "application/json"
                 ],
@@ -172,7 +166,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/webhookhandler.message"
+                            "$ref": "#/definitions/server.webhookMessage"
                         }
                     }
                 ],
@@ -186,7 +180,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "通过 userId + targetName（昵称）或 targetName（纯数字当 ID）添加好友",
                 "produces": [
                     "application/json"
                 ],
@@ -218,7 +211,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量获取好友列表信息",
                 "produces": [
                     "application/json"
                 ],
@@ -245,7 +237,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "通过 id / phone / email 查询单个用户",
                 "produces": [
                     "application/json"
                 ],
@@ -283,7 +274,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "软删除用户（需 DELETE 方法）",
                 "produces": [
                     "application/json"
                 ],
@@ -310,7 +300,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量获取所有用户信息",
                 "produces": [
                     "application/json"
                 ],
@@ -328,7 +317,6 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新用户信息（仅更新非空字段）",
                 "produces": [
                     "application/json"
                 ],
@@ -386,7 +374,42 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "healthsvc.ComponentStatus": {
+        "models.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.webhookMessage": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "receivers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.ComponentStatus": {
             "type": "object",
             "properties": {
                 "latency_ms": {
@@ -400,7 +423,7 @@ const docTemplate = `{
                 }
             }
         },
-        "healthsvc.DBPoolStats": {
+        "service.DBPoolStats": {
             "type": "object",
             "properties": {
                 "idle": {
@@ -429,7 +452,36 @@ const docTemplate = `{
                 }
             }
         },
-        "healthsvc.MemStats": {
+        "service.HealthReport": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/service.ComponentStatus"
+                    }
+                },
+                "db_pool": {
+                    "$ref": "#/definitions/service.DBPoolStats"
+                },
+                "go_version": {
+                    "type": "string"
+                },
+                "goroutines": {
+                    "type": "integer"
+                },
+                "memory": {
+                    "$ref": "#/definitions/service.MemStats"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MemStats": {
             "type": "object",
             "properties": {
                 "alloc_mb": {
@@ -440,70 +492,6 @@ const docTemplate = `{
                 },
                 "sys_mb": {
                     "type": "number"
-                }
-            }
-        },
-        "healthsvc.Report": {
-            "type": "object",
-            "properties": {
-                "components": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/healthsvc.ComponentStatus"
-                    }
-                },
-                "db_pool": {
-                    "$ref": "#/definitions/healthsvc.DBPoolStats"
-                },
-                "go_version": {
-                    "type": "string"
-                },
-                "goroutines": {
-                    "type": "integer"
-                },
-                "memory": {
-                    "$ref": "#/definitions/healthsvc.MemStats"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "uptime": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.LoginRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "webhookhandler.message": {
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "receivers": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
                 }
             }
         }
