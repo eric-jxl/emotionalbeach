@@ -24,7 +24,7 @@ type App struct {
 }
 
 // NewApp assembles the application. Wire calls this last in the provider graph.
-// Startup side-effects (migration, cache warm-up, Prometheus collectors) are
+// Startup side effects (migration, cache warm-up, Prometheus collectors) are
 // handled via infra helpers so this function stays declarative.
 func NewApp(
 	cfg *config.Config,
@@ -33,9 +33,9 @@ func NewApp(
 	rdb *redis.Client,
 	loggers *infra.Loggers,
 ) *App {
-	infra.AutoMigrate(db)          // exits process if -migrate flag is set
+	infra.AutoMigrate(db)            // exits process if -migrate flag is set
 	infra.CachePreload(cfg, rdb, db) // no-op when Redis disabled
-	infra.RegisterCollectors(db)   // Prometheus DB-pool scrape collector
+	infra.RegisterCollectors(db)     // Prometheus DB-pool scrape collector
 	return &App{cfg: cfg, server: srv, loggers: loggers}
 }
 

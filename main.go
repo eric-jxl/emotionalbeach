@@ -23,18 +23,14 @@ import (
 
 //go:generate swag init -o ./docs -g main.go
 func main() {
-	// Phase 1: bootstrap a minimal console logger before config is available.
 	bootstrapLogger()
 
-	// Phase 2: load configuration.
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("❌ load config failed: %v", err)
 	}
 	zap.S().Infof("✅ 服务运行在端口: \x1b[32m%d\x1b[0m", cfg.Server.Port)
 
-	// Phase 3: wire up the full application graph.
-	// InitializeApp replaces the logger with the fully-configured one,
 	// initialises DB/Redis, builds the HTTP server, and returns a cleanup func.
 	application, cleanup, err := di.InitializeApp(cfg)
 	if err != nil {
@@ -42,12 +38,10 @@ func main() {
 	}
 	defer cleanup()
 
-	// Phase 4: run — blocks until SIGINT / SIGTERM, then shuts down gracefully.
 	application.Run()
 }
 
 // bootstrapLogger sets up a minimal zap console logger so that log calls
-// between process start and ProvideLoggers do not panic.
 func bootstrapLogger() {
 	logger, _ := zap.NewDevelopment()
 	zap.ReplaceGlobals(logger)
