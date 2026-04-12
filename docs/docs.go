@@ -217,14 +217,13 @@ const docTemplate = `{
                 "tags": [
                     "好友关系"
                 ],
-                "summary": "获取好友列表",
+                "summary": "好友列表",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "用户 ID",
                         "name": "userId",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {}

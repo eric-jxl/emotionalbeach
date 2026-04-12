@@ -215,14 +215,13 @@ paths:
       - description: 用户 ID
         in: formData
         name: userId
-        required: true
         type: integer
       produces:
       - application/json
       responses: {}
       security:
       - ApiKeyAuth: []
-      summary: 获取好友列表
+      summary: 好友列表
       tags:
       - 好友关系
   /v1/user/condition:

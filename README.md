@@ -1,7 +1,5 @@
 # emotionalBeach
 
-[📄 中文项目结构文档](./docs/PROJECT_STRUCTURE_CN.md) | [📄 English Project Structure](./docs/PROJECT_STRUCTURE_EN.md)
-
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/eric-jxl/emotionalbeach?color=blue&label=go&logo=go)
 [![build-go-binary](https://github.com/eric-jxl/emotionalbeach/actions/workflows/go-binary-release.yml/badge.svg)](https://github.com/eric-jxl/emotionalbeach/actions/workflows/go-binary-release.yml)
 [![Docker Image CI](https://github.com/eric-jxl/emotionalbeach/actions/workflows/docker-image.yml/badge.svg)](https://github.com/eric-jxl/emotionalbeach/actions/workflows/docker-image.yml)
@@ -14,20 +12,20 @@
 
 ### 🎯 核心功能
 
-| 功能 | 说明 |
-|------|------|
-| ✅ 用户认证系统 | 用户名/密码登录 + GitHub OAuth 一键登录 |
-| ✅ 好友关系管理 | 添加好友（ID / 昵称）、获取好友列表 |
-| ✅ JWT Token 认证 | 7 天有效期，Bearer 格式，配置注入密钥 |
-| ✅ 内嵌登录页 | 密码 / 验证码 / 扫码三种登录方式 UI，登录后自动跳转 Swagger |
-| ✅ Swagger 自动注入 Token | 登录后自动写入 `localStorage`，Swagger UI 打开即完成 ApiKeyAuth 授权 |
-| ✅ 邮件通知服务 | 多收件人、HTML 内容，配置驱动（无环境变量依赖） |
-| ✅ Redis 缓存 | 启动时预热，可通过配置开关 |
-| ✅ IP 限流保护 | 令牌桶算法，防止滥用 |
-| ✅ Prometheus 指标 | `/metrics` 端点，开箱即用 |
-| ✅ Swagger API 文档 | 自动生成，`/swagger/index.html` 访问 |
-| ✅ 多数据库支持 | PostgreSQL / MySQL 配置热切换 |
-| ✅ 优雅启停 | `SIGINT/SIGTERM` 信号驱动，Wire cleanup 顺序关闭 HTTP → DB → Redis → Logger |
+| 功能                   | 说明                                                                 |
+|----------------------|--------------------------------------------------------------------|
+| ✅ 用户认证系统             | 用户名/密码登录 + GitHub OAuth 一键登录                                       |
+| ✅ 好友关系管理             | 添加好友（ID / 昵称）、获取好友列表                                               |
+| ✅ JWT Token 认证       | 7 天有效期，Bearer 格式，配置注入密钥                                            |
+| ✅ 内嵌登录页              | 密码 / 验证码 / 扫码三种登录方式 UI，登录后自动跳转 Swagger                             |
+| ✅ Swagger 自动注入 Token | 登录后自动写入 `localStorage`，Swagger UI 打开即完成 ApiKeyAuth 授权              |
+| ✅ 邮件通知服务             | 多收件人、HTML 内容，配置驱动（无环境变量依赖）                                         |
+| ✅ Redis 缓存           | 启动时预热，可通过配置开关                                                      |
+| ✅ IP 限流保护            | 令牌桶算法，防止滥用                                                         |
+| ✅ Prometheus 指标      | `/metrics` 端点，开箱即用                                                 |
+| ✅ Swagger API 文档     | 自动生成，`/swagger/index.html` 访问                                      |
+| ✅ 多数据库支持             | PostgreSQL / MySQL 配置热切换                                           |
+| ✅ 优雅启停               | `SIGINT/SIGTERM` 信号驱动，Wire cleanup 顺序关闭 HTTP → DB → Redis → Logger |
 
 ---
 
@@ -49,8 +47,8 @@ main.go
 
 ```go
 // internal/di/wire.go
-func InitializeApp(cfg *config.Config) (*App, func(), error) {
-    panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, NewApp))
+func InitializeApp(cfg *config.Config) (*App, func (), error) {
+panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, NewApp))
 }
 ```
 
@@ -58,21 +56,33 @@ func InitializeApp(cfg *config.Config) (*App, func(), error) {
 
 所有接口统一使用 `internal/common` 包中的**三个**函数封装返回：
 
-| 函数 | 场景 | HTTP 状态 | `code` 字段 |
-|------|------|-----------|-------------|
-| `common.Success(c, data)` | 请求成功 | 200 | `0` |
+| 函数                                | 场景                   | HTTP 状态  | `code` 字段  |
+|-----------------------------------|----------------------|----------|------------|
+| `common.Success(c, data)`         | 请求成功                 | 200      | `0`        |
 | `common.Fail(c, httpStatus, msg)` | 业务失败（参数错误、鉴权失败等 4xx） | 传入值（4xx） | 同 HTTP 状态码 |
-| `common.ServerError(c, msg)` | 服务内部错误（5xx） | 500 | `500` |
+| `common.ServerError(c, msg)`      | 服务内部错误（5xx）          | 500      | `500`      |
 
 ```json
 // ✅ 成功 — common.Success(c, data)
-{ "code": 200, "message": "success", "data": { ... } }
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    ...
+  }
+}
 
 // ⚠️ 业务失败 — common.Fail(c, 400, "msg")
-{ "code": 400, "message": "手机号必须为 11 位" }
+{
+  "code": 400,
+  "message": "手机号必须为 11 位"
+}
 
 // ❌ 服务错误 — common.ServerError(c, "msg")
-{ "code": 500, "message": "修改信息失败: ..." }
+{
+  "code": 500,
+  "message": "修改信息失败: ..."
+}
 ```
 
 ### 目录结构
@@ -212,11 +222,11 @@ swag init -o ./docs -g main.go
 
 服务内置了一个完整的登录页面（`/`），支持三种登录方式：
 
-| 方式 | 说明 |
-|------|------|
-| 密码登录 | 输入手机号 / 邮箱 + 密码，点击登录 |
+| 方式    | 说明                   |
+|-------|----------------------|
+| 密码登录  | 输入手机号 / 邮箱 + 密码，点击登录 |
 | 验证码登录 | 手机号 + 短信验证码（待接入短信服务） |
-| 扫码登录 | 预留入口（待实现） |
+| 扫码登录  | 预留入口（待实现）            |
 
 登录成功后的完整流程：
 
@@ -233,77 +243,66 @@ swag init -o ./docs -g main.go
 
 ### 👤 用户（User）
 
-| 方法 | 端点 | 认证 | 功能 |
-|------|------|:----:|------|
-| POST | `/register` | ❌ | 用户注册（表单） |
-| POST | `/login` | ❌ | 密码登录，返回 JWT |
-| GET | `/login/github` | ❌ | GitHub OAuth 跳转 |
-| GET | `/callback` | ❌ | GitHub OAuth 回调 |
-| GET | `/v1/user/list` | ✅ | 获取所有用户 |
-| GET | `/v1/user/condition` | ✅ | 条件查询（id / phone / email） |
-| POST | `/v1/user/update` | ✅ | 更新用户信息 |
-| DELETE | `/v1/user/delete` | ✅ | 软删除用户 |
+| 方法     | 端点                   | 认证 | 功能                       |
+|--------|----------------------|:--:|--------------------------|
+| POST   | `/register`          | ❌  | 用户注册（表单）                 |
+| POST   | `/login`             | ❌  | 密码登录，返回 JWT              |
+| GET    | `/login/github`      | ❌  | GitHub OAuth 跳转          |
+| GET    | `/callback`          | ❌  | GitHub OAuth 回调          |
+| GET    | `/v1/user/list`      | ✅  | 获取所有用户                   |
+| GET    | `/v1/user/condition` | ✅  | 条件查询（id / phone / email） |
+| POST   | `/v1/user/update`    | ✅  | 更新用户信息                   |
+| DELETE | `/v1/user/delete`    | ✅  | 软删除用户                    |
 
 ### 👥 好友关系（Relation）
 
-| 方法 | 端点 | 认证 | 功能 |
-|------|------|:----:|------|
-| POST | `/v1/relation/list` | ✅ | 获取好友列表 |
-| POST | `/v1/relation/add` | ✅ | 添加好友（ID 或昵称） |
+| 方法   | 端点                  | 认证 | 功能           |
+|------|---------------------|:--:|--------------|
+| POST | `/v1/relation/list` | ✅  | 获取好友列表       |
+| POST | `/v1/relation/add`  | ✅  | 添加好友（ID 或昵称） |
 
 ### 📧 Webhook / 通知
 
-| 方法 | 端点 | 认证 | 功能 |
-|------|------|:----:|------|
-| POST | `/v1/api/webhook` | ✅ | 异步发送邮件通知 |
+| 方法   | 端点                | 认证 | 功能       |
+|------|-------------------|:--:|----------|
+| POST | `/v1/api/webhook` | ✅  | 异步发送邮件通知 |
 
 ### 🏥 系统
 
-| 方法 | 端点 | 功能 |
-|------|------|------|
-| GET | `/ping` | 快速存活检查 |
-| GET | `/health` | 深度健康检查（DB + Redis 状态） |
-| GET | `/metrics` | Prometheus 指标抓取 |
-| GET | `/swagger/*` | Swagger 交互式文档 |
+| 方法  | 端点           | 功能                    |
+|-----|--------------|-----------------------|
+| GET | `/ping`      | 快速存活检查                |
+| GET | `/health`    | 深度健康检查（DB + Redis 状态） |
+| GET | `/metrics`   | Prometheus 指标抓取       |
+| GET | `/swagger/*` | Swagger 交互式文档         |
 
 ---
 
 ## 🔐 安全特性
 
-| 特性 | 实现方式 |
-|------|----------|
-| 密码加密 | MD5 + 随机盐值（`common.SaltPassWord`） |
-| JWT 认证 | HS256，7 天有效期，密钥从配置注入 |
-| IP 限流 | 令牌桶，10 秒内最多 5 次（可配置） |
-| 结构化日志 | Zap + Lumberjack 滚动，控制台彩色 + JSON 文件双输出 |
-| 请求追踪 | 每个请求自动注入 `X-Request-Id` |
+| 特性     | 实现方式                                   |
+|--------|----------------------------------------|
+| 密码加密   | MD5 + 随机盐值（`common.SaltPassWord`）      |
+| JWT 认证 | HS256，7 天有效期，密钥从配置注入                   |
+| IP 限流  | 令牌桶，10 秒内最多 5 次（可配置）                   |
+| 结构化日志  | Zap + Lumberjack 滚动，控制台彩色 + JSON 文件双输出 |
+| 请求追踪   | 每个请求自动注入 `X-Request-Id`                |
 
 ---
 
 ## 📊 技术栈
 
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Gin | v1.10.1 | HTTP 框架 |
-| GORM | v1.30.2 | ORM |
-| Google Wire | v0.7.0 | 编译期依赖注入 |
-| JWT | v5.3.0 | Token 认证 |
-| Redis (go-redis) | v9.17.2 | 缓存层 |
-| Viper | v1.20.1 | 配置管理 |
-| Zap | v1.27.1 | 结构化日志 |
-| Prometheus | latest | 可观测性指标 |
-| Swagger (swag) | v1.16.6 | API 文档生成 |
-
----
-
-## 📖 详细文档
-
-- [📄 中文项目结构文档](./docs/PROJECT_STRUCTURE_CN.md)
-- [📄 英文项目结构文档](./docs/PROJECT_STRUCTURE_EN.md)
-- [📋 中文 API 接口文档](./docs/API_DOCS_CN.md)
-- [📋 英文 API 接口文档](./docs/API_DOCS_EN.md)
-
----
+| 技术               | 版本      | 用途       |
+|------------------|---------|----------|
+| Gin              | v1.10.1 | HTTP 框架  |
+| GORM             | v1.30.2 | ORM      |
+| Google Wire      | v0.7.0  | 编译期依赖注入  |
+| JWT              | v5.3.0  | Token 认证 |
+| Redis (go-redis) | v9.17.2 | 缓存层      |
+| Viper            | v1.20.1 | 配置管理     |
+| Zap              | v1.27.1 | 结构化日志    |
+| Prometheus       | latest  | 可观测性指标   |
+| Swagger (swag)   | v1.16.6 | API 文档生成 |
 
 ## 📄 许可证
 
