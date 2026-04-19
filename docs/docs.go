@@ -22,6 +22,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "注册登陆"
+                ],
+                "summary": "刷新 Token（旧 Token 未过期时可刷新）",
+                "responses": {}
+            }
+        },
+        "/auth/verify": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "注册登陆"
+                ],
+                "summary": "校验 Token 有效性",
+                "responses": {}
+            }
+        },
         "/callback": {
             "get": {
                 "tags": [

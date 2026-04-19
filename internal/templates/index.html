@@ -248,7 +248,7 @@
     }
 
     // 登录表单处理
-    function handleLogin(event) {
+    async function handleLogin(event) {
         event.preventDefault();
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
@@ -258,8 +258,9 @@
             return;
         }
 
-        // 密码由后端统一哈希校验，前端直接发送原始密码（依赖 HTTPS 传输加密）
-        const loginData = { username, password };
+        // 前端 SHA-256 防止明文传输；后端会对收到的 hash 再次 SHA-256 后存储/比对
+        const pwHash = await sha256(password);
+        const loginData = { username, password: pwHash };
         fetch('/login', {
             method: 'POST',
             headers: {
@@ -287,6 +288,14 @@
         });
     }
 
+
+    // SHA-256 工具函数（Web Crypto API，无需第三方库）
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
     function change_pwd_show() {
         document.getElementById('password').type = 'text';
