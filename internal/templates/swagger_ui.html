@@ -25,6 +25,20 @@
             font-family: sans-serif;
             animation: slideDown .3s ease;
         }
+        #logout-btn {
+            position: fixed;
+            top: 8px; right: 16px;
+            z-index: 10000;
+            background: #ff4d4f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: sans-serif;
+        }
+        #logout-btn:hover { background: #cf1322; }
         @keyframes slideDown {
             from { transform: translateY(-100%); }
             to   { transform: translateY(0); }
@@ -33,14 +47,42 @@
 </head>
 <body>
 <div id="token-banner">🔑 已自动注入登录 Token，可直接调用受保护接口</div>
+<button id="logout-btn" onclick="logout()">退出登录</button>
 <div id="swagger-ui"></div>
 
 <script src="./swagger-ui-bundle.js"></script>
 <script src="./swagger-ui-standalone-preset.js"></script>
 <script>
-    window.onload = function () {
-        const token = localStorage.getItem('eb_token') || '';
+    // ── 退出登录 ────────────────────────────────────────────────────────────
+    function logout() {
+        localStorage.removeItem('eb_token');
+        localStorage.removeItem('eb_token_exp');
+        window.location.href = '/';
+    }
 
+    // ── Token 验证：无 Token 或已过期则跳回登录页 ────────────────────────────
+    const token = localStorage.getItem('eb_token');
+    const tokenExp = parseInt(localStorage.getItem('eb_token_exp') || '0', 10);
+
+    function redirectToLogin() {
+        localStorage.removeItem('eb_token');
+        localStorage.removeItem('eb_token_exp');
+        window.location.href = '/';
+    }
+
+    if (!token) {
+        redirectToLogin();
+    } else if (tokenExp && Date.now() > tokenExp) {
+        // 本地判断已过期，直接跳转
+        redirectToLogin();
+    } else {
+        // 调用后端接口两次校验
+        fetch('/auth/verify', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(r => { if (!r.ok) redirectToLogin(); })
+            .catch(() => { /* 网络异常时不强制跳转，允许离线查看 */ });
+    }
+
+    window.onload = function () {
         const ui = SwaggerUIBundle({
             url: "/swagger/doc.json",
             dom_id: '#swagger-ui',
@@ -54,19 +96,30 @@
             persistAuthorization: true,
             onComplete: function () {
                 if (token) {
-                    // 注入 Bearer token 到 ApiKeyAuth（与 swagger 注解中的 securityDefinitions 对应）
                     ui.preauthorizeApiKey('ApiKeyAuth', 'Bearer ' + token);
-
-                    // 显示提示条，3 秒后自动消失
                     const banner = document.getElementById('token-banner');
                     banner.style.display = 'block';
-                    setTimeout(function () {
-                        banner.style.display = 'none';
-                    }, 3000);
+                    setTimeout(function () { banner.style.display = 'none'; }, 3000);
                 }
             }
         });
         window.ui = ui;
+
+        // 每 5 分钟自动刷新 Token，保持登录态
+        setInterval(function () {
+            const t = localStorage.getItem('eb_token');
+            if (!t) return;
+            fetch('/auth/refresh', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + t }
+            }).then(r => r.ok ? r.json() : null)
+              .then(data => {
+                  if (data && data.data && data.data.token) {
+                      localStorage.setItem('eb_token', data.data.token);
+                      localStorage.setItem('eb_token_exp', Date.now() + 7 * 24 * 60 * 60 * 1000);
+                  }
+              }).catch(() => {});
+        }, 5 * 60 * 1000);
     };
 </script>
 </body>

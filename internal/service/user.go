@@ -6,7 +6,6 @@ import (
 	"emotionalBeach/internal/models"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -40,16 +39,41 @@ func (s *Service) GetByEmail(email string) (*models.UserBasic, error) {
 
 // Login validates the username/password pair, refreshes the identity token,
 // and returns the authenticated user.
+// 支持 sha256 和旧版 MD5+salt 两种格式，旧格式登录成功后自动迁移到 sha256。
 func (s *Service) Login(username, password string) (*models.UserBasic, error) {
+	// 先尝试按用户名查找，再尝试邮箱/手机号
 	user, err := s.dao.FindUserByName(username)
 	if err != nil || user == nil {
+		user, err = s.dao.FindUserByEmail(username)
+	}
+	if err != nil || user == nil {
+		user, err = s.dao.FindUserByPhone(username)
+	}
+	if err != nil || user == nil {
 		ebmetrics.UserLoginsTotal.WithLabelValues("not_found").Inc()
-		return nil, errors.New("user not found")
+		return nil, errors.New("用户不存在")
 	}
-	if !common.CheckPassWord(password, user.Salt, user.Password) {
-		ebmetrics.UserLoginsTotal.WithLabelValues("wrong_password").Inc()
-		return nil, errors.New("invalid password")
+
+	// 验证密码：sha256 优先，旧版 MD5+salt 兜底
+	if common.IsSha256Hash(user.Password) {
+		if !common.CheckSha256Password(password, user.Password) {
+			ebmetrics.UserLoginsTotal.WithLabelValues("wrong_password").Inc()
+			return nil, errors.New("密码错误")
+		}
+	} else {
+		// 旧版 MD5+salt 校验
+		if !common.CheckPassWord(password, user.Salt, user.Password) {
+			ebmetrics.UserLoginsTotal.WithLabelValues("wrong_password").Inc()
+			return nil, errors.New("密码错误")
+		}
+		// 自动迁移：将密码升级为 sha256
+		if hashed, herr := common.Sha256Password(password); herr == nil {
+			_ = s.dao.UpdatePassword(user.ID, hashed, "")
+			user.Password = hashed
+			user.Salt = ""
+		}
 	}
+
 	identity := common.Md5encoder(strconv.Itoa(int(time.Now().Unix())))
 	if err := s.dao.UpdateIdentity(user.ID, identity); err != nil {
 		ebmetrics.UserLoginsTotal.WithLabelValues("token_error").Inc()
@@ -60,17 +84,20 @@ func (s *Service) Login(username, password string) (*models.UserBasic, error) {
 	return user, nil
 }
 
-// Register creates a new user after validating uniqueness and hashing the password.
+// Register creates a new user after validating uniqueness and hashing the password with sha256.
 func (s *Service) Register(name, password, phone, email string) (*models.UserBasic, error) {
 	if s.dao.UserNameExists(name) {
 		return nil, errors.New("username already taken")
 	}
-	salt := strconv.Itoa(int(rand.Int31()))
+	hashed, err := common.Sha256Password(password)
+	if err != nil {
+		return nil, fmt.Errorf("密码加密失败: %w", err)
+	}
 	now := time.Now()
 	user := models.UserBasic{
 		Name:          name,
-		Password:      common.SaltPassWord(password, salt),
-		Salt:          salt,
+		Password:      hashed,
+		Salt:          "emo", // sha256 不需要独立 salt
 		Phone:         phone,
 		Email:         email,
 		LoginTime:     &now,
@@ -96,9 +123,12 @@ func (s *Service) Update(req UpdateRequest) (*models.UserBasic, error) {
 		user.Name = req.Name
 	}
 	if req.Password != "" {
-		salt := fmt.Sprintf("%d", rand.Int31())
-		user.Salt = salt
-		user.Password = common.SaltPassWord(req.Password, salt)
+		hashed, err := common.Sha256Password(req.Password)
+		if err != nil {
+			return nil, fmt.Errorf("密码加密失败: %w", err)
+		}
+		user.Salt = ""
+		user.Password = hashed
 	}
 	if req.Email != "" {
 		user.Email = req.Email
@@ -118,4 +148,3 @@ func (s *Service) Update(req UpdateRequest) (*models.UserBasic, error) {
 func (s *Service) DeleteUser(id uint) error {
 	return s.dao.DeleteUser(id)
 }
-

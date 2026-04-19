@@ -113,6 +113,10 @@ func initRouter(r *gin.Engine, cfg *config.Config) {
 	})
 	r.POST("/register", register)
 
+	// ── Token 校验 / 刷新（无需 JWT 中间件，自行校验）──────────────────────
+	r.GET("/auth/verify", verifyToken)
+	r.POST("/auth/refresh", refreshToken)
+
 	// ── Protected v1 routes (JWT + IP rate-limit) ───────────────────────────
 	ipLimiter := middleware.NewIPRateLimiter(rate.Every(10*time.Second), 5)
 	v1 := r.Group("/v1", middleware.AuthJwt(), middleware.RateLimitMiddleware(ipLimiter))

@@ -91,3 +91,11 @@ func (d *dao) UpdateIdentity(id uint, identity string) error {
 	return nil
 }
 
+func (d *dao) UpdatePassword(id uint, hashed, salt string) error {
+	updates := map[string]interface{}{"password": hashed, "salt": salt}
+	if tx := d.db.Model(&models.UserBasic{}).Where("id = ?", id).Updates(updates); tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+

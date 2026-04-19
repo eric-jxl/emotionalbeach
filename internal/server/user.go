@@ -5,28 +5,30 @@ import (
 	"emotionalBeach/internal/middleware"
 	"emotionalBeach/internal/models"
 	"emotionalBeach/internal/service"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
 type userView struct {
-	ID       uint   `json:"id"`
-	Name     string `json:"name"`
-	Avatar   string `json:"avatar"`
-	Gender   string `json:"gender"`
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
-	Identity string `json:"identity"`
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+	Gender string `json:"gender"`
+	Phone  string `json:"phone"`
+	Email  string `json:"email"`
+	Role   string `json:"role"`
 }
 
 func toUserView(u models.UserBasic) userView {
 	return userView{
 		ID: u.ID, Name: u.Name, Avatar: u.Avatar,
-		Gender: u.Gender, Phone: u.Phone, Email: u.Email, Identity: u.Identity,
+		Gender: u.Gender, Phone: u.Phone, Email: u.Email, Role: u.Role,
 	}
 }
 
@@ -115,7 +117,7 @@ func login(c *gin.Context) {
 		common.ServerError(c, "生成 token 失败")
 		return
 	}
-	common.Success(c, gin.H{"message": "登录成功", "user_id": authUser.ID, "token": token})
+	common.Success(c, gin.H{"message": "登录成功", "token": token})
 }
 
 // register godoc
@@ -158,7 +160,7 @@ func register(c *gin.Context) {
 		common.Fail(c, http.StatusConflict, err.Error())
 		return
 	}
-	common.Success(c, created)
+	common.Success(c, toUserView(*created))
 }
 
 // updateUser godoc
@@ -215,4 +217,61 @@ func deleteUser(c *gin.Context) {
 		return
 	}
 	common.Success(c, gin.H{"msg": "注销成功"})
+}
+
+// verifyToken godoc
+// @Summary      校验 Token 有效性
+// @Tags         注册登陆
+// @Produce      application/json
+// @Security     ApiKeyAuth
+// @Router       /auth/verify [get]
+func verifyToken(c *gin.Context) {
+	raw := c.GetHeader("Authorization")
+	if raw == "" {
+		// 也尝试从 query 参数读取（兼容前端轮询场景）
+		raw = c.Query("token")
+	}
+	token := middleware.ExtractToken(raw)
+	if token == "" {
+		common.Fail(c, http.StatusUnauthorized, "token missing")
+		return
+	}
+	claims, err := middleware.ParseToken(token)
+	if err != nil || claims == nil {
+		switch {
+		case errors.Is(err, jwt.ErrTokenExpired):
+			common.Fail(c, http.StatusUnauthorized, "token_expired")
+		default:
+			common.Fail(c, http.StatusUnauthorized, "token_invalid")
+		}
+		return
+	}
+	common.Success(c, gin.H{"user_id": claims.UserID, "valid": true})
+}
+
+// refreshToken godoc
+// @Summary      刷新 Token（旧 Token 未过期时可刷新）
+// @Tags         注册登陆
+// @Produce      application/json
+// @Security     ApiKeyAuth
+// @Router       /auth/refresh [post]
+func refreshToken(c *gin.Context) {
+	raw := c.GetHeader("Authorization")
+	token := middleware.ExtractToken(raw)
+	if token == "" {
+		common.Fail(c, http.StatusUnauthorized, "token missing")
+		return
+	}
+	claims, err := middleware.ParseToken(token)
+	if err != nil || claims == nil || claims.UserID == 0 {
+		common.Fail(c, http.StatusUnauthorized, "token invalid")
+		return
+	}
+	newToken, err := middleware.GenerateToken(claims.UserID, claims.Issuer)
+	if err != nil {
+		zap.S().Errorf("refresh token: %v", err)
+		common.ServerError(c, "刷新 token 失败")
+		return
+	}
+	common.Success(c, gin.H{"token": newToken})
 }

@@ -111,6 +111,11 @@ func currentJWTSecret() []byte {
 // ---------------------------------------------------------------------------
 
 func extractToken(raw string) string {
+	return ExtractToken(raw)
+}
+
+// ExtractToken strips a "Bearer " prefix and returns the raw JWT string.
+func ExtractToken(raw string) string {
 	raw = strings.TrimSpace(raw)
 	if after, ok := strings.CutPrefix(raw, "Bearer "); ok {
 		return strings.TrimSpace(after)

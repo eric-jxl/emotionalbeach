@@ -31,8 +31,8 @@ type Dao interface {
 	CreateUser(user models.UserBasic) (*models.UserBasic, error)
 	UpdateUser(user models.UserBasic) (*models.UserBasic, error)
 	DeleteUser(id uint) error
-	// UpdateIdentity refreshes the auth-identity token for the given user.
 	UpdateIdentity(id uint, identity string) error
+	UpdatePassword(id uint, hashed, salt string) error
 
 	FriendList(userID uint) ([]models.UserBasic, error)
 	FriendExists(ownerID, targetID uint) bool
