@@ -2,7 +2,7 @@ ARG GO_VERSION=1.24.0
 FROM golang:${GO_VERSION}-alpine AS build
 WORKDIR /data
 USER root
-ENV GOPROXY=https://goproxy.io,direct \
+ENV ENV GOPROXY=https://proxy.golang.org,direct\
     GOOS=linux \
     CGO_ENABLED=0
 
