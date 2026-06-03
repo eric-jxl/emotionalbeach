@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: emotionalbeach
+
+resources:
+  - namespace.yaml
+  - secret.yaml
+  - configmap.yaml
+  - postgres.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - ingress.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: emotionalbeach
+    includeSelectors: false
+
+images:
+  - name: ghcr.io/eric-jxl/emotionalbeach
+    newTag: latest
+

@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emotionalbeach
+  namespace: emotionalbeach
+  labels:
+    app.kubernetes.io/name: emotionalbeach
+    app.kubernetes.io/component: api
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: emotionalbeach
+      app.kubernetes.io/component: api
+  # ── 滚动更新策略 ─────────────────────────────────────────────────────────
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # 升级时最多额外多启动 1 个 Pod
+      maxUnavailable: 0    # 升级过程中保证旧 Pod 全部可用，做到零停机
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: emotionalbeach
+        app.kubernetes.io/component: api
+      annotations:
+        # 让 Prometheus 自动抓取指标
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+        # config 变更时触发滚动更新（用 kubectl/kustomize 注入真实 hash 更佳）
+        checksum/config: "replace-with-config-hash"
+    spec:
+      # 优雅停机：需要 >= 业务 shutdownTimeoutSec(10s)
+      terminationGracePeriodSeconds: 30
+      # 尽量把多副本分散到不同节点，提升滚动更新与高可用效果
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: emotionalbeach
+              app.kubernetes.io/component: api
+      containers:
+        - name: emotionalbeach
+          image: ghcr.io/eric-jxl/emotionalbeach:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: emotionalbeach-secret
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+          # ── 探针 ─────────────────────────────────────────────────────────
+          # 启动探针：保护慢启动，成功前不执行 liveness/readiness
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+          # 存活探针：进程级健康，失败则重启容器
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # 就绪探针：依赖（数据库）健康才接收流量，滚动更新零停机的关键
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # 收到 SIGTERM 前先 sleep，给 Service/Endpoints 摘流的时间，避免请求打到正在关闭的 Pod
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          configMap:
+            name: emotionalbeach-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+

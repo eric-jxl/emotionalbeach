@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emotionalbeach
+  namespace: emotionalbeach
+  labels:
+    app.kubernetes.io/name: emotionalbeach
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: emotionalbeach.local      # 按需替换为真实域名
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: emotionalbeach
+                port:
+                  number: 80
+
