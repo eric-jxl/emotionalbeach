@@ -8,7 +8,7 @@
 
 **emotionalBeach** 是一个基于 Go 语言的后端 API 服务，使用 **Gin** 框架构建，集成了用户认证、好友关系管理、邮件通知等功能。
 
-**开发环境：** Go v1.24 + Gin v1.10.1 + GORM v1.30.2 + Viper v1.20.1 + Wire v0.7.0
+**开发环境：** Go v1.24 + Gin v1.11.0 + GORM v1.31.1 + Viper v1.21.0 + Wire v0.7.0
 
 ### 🎯 核心功能
 
@@ -127,6 +127,8 @@ emotionalbeach/
 │   │   └── response.go              # 统一 HTTP 响应：Success / Fail / ServerError
 │   └── templates/                   # 嵌入式前端（登录页、Swagger UI、静态资源）
 ├── docs/                            # Swagger 自动生成文档
+├── k8s/                             # Kubernetes 部署清单（Kustomize）
+├── logs/                            # 运行时日志输出目录
 └── monitoring/                      # Prometheus + Grafana 监控配置
 ```
 
@@ -135,7 +137,7 @@ emotionalbeach/
 ## 🚀 快速启动
 
 ```bash
-# 推荐：Docker Compose 一键启动
+# 推荐：Docker Compose 一键启动（含 PostgreSQL + Prometheus + Grafana）
 docker compose up -d
 
 # 拉取最新镜像
@@ -145,7 +147,7 @@ docker pull ghcr.io/eric-jxl/emotionalbeach:latest
 > [!TIP]
 > - 启动前需配置 `config/config.yaml`（数据库、Redis、端口等）
 > - 所有敏感配置支持**环境变量覆盖**（`SERVER_JWTSECRET`、`DATABASES_*` 等）
-> - 默认监听端口 **8080**
+> - 默认监听端口 **8080**，Prometheus **9090**，Grafana **3000**
 
 ---
 
@@ -170,17 +172,40 @@ server:
   clientID: "github-client-id"
   clientSecret: "github-client-secret"
   enableRedis: true
+  readTimeoutSec: 15
+  writeTimeoutSec: 30
+  idleTimeoutSec: 60
   shutdownTimeoutSec: 10
 
+log:
+  level: "debug"              # debug | info | warn | error
+  filename: "logs/app.log"    # 留空则只输出控制台
+  maxSizeMB: 100
+  maxBackups: 5
+  maxAgeDays: 30
+  compress: true
+
 databases:
-  main:
+  postgres_main:
     type: postgres          # 或 mysql
     host: localhost
     port: 5432
     user: postgres
     password: password
     dbname: emotionalbeach
-default_database: main
+    sslmode: disable
+    max_open_conns: 20
+    max_idle_conns: 10
+    conn_max_lifetime: 300
+default_database: postgres_main
+
+redis:
+  host: localhost
+  port: 6379
+  password: "your-redis-password"
+  db: 0
+  pool_size: 20
+  min_idle_connects: 5
 
 mail:
   smtpUser: "xxx@qq.com"
@@ -249,6 +274,8 @@ swag init -o ./docs -g main.go
 | POST   | `/login`             | ❌  | 密码登录，返回 JWT              |
 | GET    | `/login/github`      | ❌  | GitHub OAuth 跳转          |
 | GET    | `/callback`          | ❌  | GitHub OAuth 回调          |
+| GET    | `/auth/verify`       | ❌  | 校验 Token 有效性（Header 或 query） |
+| POST   | `/auth/refresh`      | ❌  | 刷新 Token（旧 Token 未过期时）  |
 | GET    | `/v1/user/list`      | ✅  | 获取所有用户                   |
 | GET    | `/v1/user/condition` | ✅  | 条件查询（id / phone / email） |
 | POST   | `/v1/user/update`    | ✅  | 更新用户信息                   |
@@ -278,6 +305,34 @@ swag init -o ./docs -g main.go
 
 ---
 
+## ☸️ Kubernetes 部署
+
+项目提供完整的 K8s 清单（`k8s/` 目录），基于 **Kustomize** 管理：
+
+```bash
+# 一键应用全部清单
+make k8s-apply
+
+# 构建 / 推送 / 滚动更新（可传 TAG）
+make k8s-deploy TAG=v1.0.0
+
+# 查看滚动更新状态
+make k8s-status
+
+# 回滚到上一个版本
+make k8s-rollback
+
+# 查看发布历史
+make k8s-history
+
+# 删除全部资源
+make k8s-delete
+```
+
+清单包含：Namespace、Deployment、Service、Ingress、HPA、PDB、ConfigMap、Secret、PostgreSQL StatefulSet。
+
+---
+
 ## 🔐 安全特性
 
 | 特性     | 实现方式                                   |
@@ -294,14 +349,15 @@ swag init -o ./docs -g main.go
 
 | 技术               | 版本      | 用途       |
 |------------------|---------|----------|
-| Gin              | v1.10.1 | HTTP 框架  |
-| GORM             | v1.30.2 | ORM      |
+| Gin              | v1.11.0 | HTTP 框架  |
+| GORM             | v1.31.1 | ORM      |
 | Google Wire      | v0.7.0  | 编译期依赖注入  |
 | JWT              | v5.3.0  | Token 认证 |
 | Redis (go-redis) | v9.17.2 | 缓存层      |
-| Viper            | v1.20.1 | 配置管理     |
+| Viper            | v1.21.0 | 配置管理     |
 | Zap              | v1.27.1 | 结构化日志    |
 | Prometheus       | latest  | 可观测性指标   |
+| Grafana          | latest  | 监控仪表盘    |
 | Swagger (swag)   | v1.16.6 | API 文档生成 |
 
 ## 📄 许可证
