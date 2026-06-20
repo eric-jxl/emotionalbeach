@@ -33,3 +33,5 @@ tmp/
 cmd/
 config/config.yaml
 logs/
+
+.codegraph/

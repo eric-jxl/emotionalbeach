@@ -3,6 +3,7 @@ make gen build_backend_on_linux upx_bin
 scp ./cmd/emotionalBeach test:/root/emo
 echo "上传成功"
 SERVICE_NAME="emotionalbeach:emotionalbeach_00"
+# shellcheck disable=SC2029
 ssh test "supervisorctl stop  '$SERVICE_NAME'; mv /root/emo /root/emotionalBeach; supervisorctl start '$SERVICE_NAME';"
 
 SSH_EXIT_CODE=$?

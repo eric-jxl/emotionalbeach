@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -69,19 +68,29 @@ func New(cfg *config.Config, s *service.Service, loggers *infra.Loggers) *http.S
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:      r,
-		ReadTimeout:  time.Duration(cfg.Server.ReadTimeoutSec) * time.Second,
-		WriteTimeout: time.Duration(cfg.Server.WriteTimeoutSec) * time.Second,
-		IdleTimeout:  time.Duration(cfg.Server.IdleTimeoutSec) * time.Second,
+		ReadTimeout:  cfg.Server.ReadTimeout(),
+		WriteTimeout: cfg.Server.WriteTimeout(),
+		IdleTimeout:  cfg.Server.IdleTimeout(),
 	}
 }
 
 func initRouter(r *gin.Engine, cfg *config.Config) {
-	// ── System endpoints (no auth) ──────────────────────────────────────────
+	// Requirement: register routes by concern to keep growth manageable and review diff-focused.
+	registerSystemRoutes(r)
+	registerStaticRoutes(r)
+	registerPublicAuthRoutes(r, cfg)
+	registerProtectedV1Routes(r, cfg)
+}
+
+// registerSystemRoutes exposes lightweight health/ops endpoints without auth.
+func registerSystemRoutes(r *gin.Engine) {
 	r.GET("/ping", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"message": "pong"}) })
 	r.GET("/metrics", middleware.MetricsHandler())
 	r.GET("/health", healthCheck)
+}
 
-	// ── Static assets ───────────────────────────────────────────────────────
+// registerStaticRoutes serves embedded frontend assets and swagger UI.
+func registerStaticRoutes(r *gin.Engine) {
 	assetsFS, assetsErr := fs.Sub(templates.AssetHTML, "assets")
 	if assetsErr != nil {
 		zap.S().Errorf("assets sub-fs failed: %v", assetsErr)
@@ -100,8 +109,10 @@ func initRouter(r *gin.Engine, cfg *config.Config) {
 	})
 	r.GET("/swagger/*any", swaggerHandler())
 	r.GET("/", indexPage)
+}
 
-	// ── Public auth routes ──────────────────────────────────────────────────
+// registerPublicAuthRoutes keeps login/register/token-maintenance endpoints centralized.
+func registerPublicAuthRoutes(r *gin.Engine, cfg *config.Config) {
 	r.GET("/login/github", githubLogin)
 	r.GET("/callback", githubCallback)
 	r.Any("/login", func(c *gin.Context) {
@@ -112,13 +123,14 @@ func initRouter(r *gin.Engine, cfg *config.Config) {
 		}
 	})
 	r.POST("/register", register)
-
-	// ── Token 校验 / 刷新（无需 JWT 中间件，自行校验）──────────────────────
 	r.GET("/auth/verify", verifyToken)
 	r.POST("/auth/refresh", refreshToken)
+	r.GET("/auth/captcha/config", captchaPublicConfig(cfg))
+}
 
-	// ── Protected v1 routes (JWT + IP rate-limit) ───────────────────────────
-	ipLimiter := middleware.NewIPRateLimiter(rate.Every(10*time.Second), 5)
+// registerProtectedV1Routes applies JWT + rate-limit policy from config to all business APIs.
+func registerProtectedV1Routes(r *gin.Engine, cfg *config.Config) {
+	ipLimiter := middleware.NewIPRateLimiter(rate.Every(cfg.Server.RateLimitEvery()), cfg.Server.RateLimitBurst())
 	v1 := r.Group("/v1", middleware.AuthJwt(), middleware.RateLimitMiddleware(ipLimiter))
 
 	u := v1.Group("user")

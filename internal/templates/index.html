@@ -3,187 +3,656 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="./assets/favicon.png" data-react-helmet="true">
+    <link rel="apple-touch-icon" href="./assets/favicon.png">
+    <script>
+        // Runtime config is fetched from backend endpoint to avoid hardcoding in static HTML.
+        window.EB_ESA_CAPTCHA = {
+            region: 'cn',
+            prefix: '',
+            sceneId: ''
+        };
+        window.AliyunCaptchaConfig = {
+            region: window.EB_ESA_CAPTCHA.region,
+            prefix: window.EB_ESA_CAPTCHA.prefix
+        };
+    </script>
     <title>首页</title>
     <style>
         html {
             visibility: hidden;
+            background: #edf3ff;
         }
     </style>
     <script src="./assets/tailwindcss.js"></script>
     <script>
-        document.documentElement.style.visibility = 'visible'
+        document.documentElement.style.visibility = 'visible';
     </script>
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <style>
-        html {
-            background: linear-gradient(135deg, #5b6cff, #9333ea);
+        :root {
+            --bg-main: linear-gradient(160deg, #eff4ff, #dce7ff 46%, #eef9ff);
+            --bg-glow-1: rgba(56, 189, 248, 0.35);
+            --bg-glow-2: rgba(236, 72, 153, 0.26);
+            --bg-glow-3: rgba(34, 197, 94, 0.24);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(148, 163, 184, 0.28);
+            --text-main: #1f2937;
+            --text-muted: #64748b;
+            --line: #d7dfea;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --input-bg: rgba(248, 250, 252, 0.95);
+            --card-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+            --tooltip-bg: rgba(15, 23, 42, 0.92);
+            --tooltip-text: #f8fafc;
         }
 
         @media (prefers-color-scheme: dark) {
-            html[data-theme='auto'] body {
-                background-color: #1f2937;
-                color: #f3f4f6;
+            :root {
+                --bg-main: linear-gradient(160deg, #050816, #0c1838 45%, #111b3d);
+                --bg-glow-1: rgba(56, 189, 248, 0.24);
+                --bg-glow-2: rgba(244, 114, 182, 0.2);
+                --bg-glow-3: rgba(59, 130, 246, 0.24);
+                --card-bg: rgba(16, 23, 42, 0.8);
+                --card-border: rgba(148, 163, 184, 0.22);
+                --text-main: #e5e7eb;
+                --text-muted: #94a3b8;
+                --line: rgba(148, 163, 184, 0.35);
+                --input-bg: rgba(15, 23, 42, 0.72);
+                --card-shadow: 0 28px 76px rgba(2, 6, 23, 0.6);
+                --tooltip-bg: rgba(241, 245, 249, 0.94);
+                --tooltip-text: #0f172a;
             }
         }
 
-        /* 验证码输入框 */
-        .verification-box {
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-main);
+            background: var(--bg-main);
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 52vw;
+            max-width: 560px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            filter: blur(78px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            top: -18vh;
+            left: -10vw;
+            background: var(--bg-glow-1);
+        }
+
+        body::after {
+            right: -12vw;
+            bottom: -20vh;
+            background: var(--bg-glow-2);
+        }
+
+        .bg-rainbow {
+            position: fixed;
+            width: min(56vw, 620px);
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: var(--bg-glow-3);
+            filter: blur(86px);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            width: 100%;
             display: flex;
-            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: min(460px, 100%);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--card-shadow);
+            padding: 26px 24px 20px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-card.is-scan {
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: 0 24px 70px rgba(37, 99, 235, 0.24);
+        }
+
+        .card-title {
+            margin: 0 0 18px;
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-header {
+            display: flex;
             justify-content: space-between;
-            margin-top: 8px;
-            border-radius: 99px; /* 可选：添加圆角 */
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
         }
 
-        .verification-box input {
-            border: 1px solid black; /* 添加黑色边框 */
-            padding: 8px; /* 可选：添加内边距 */
-            border-radius: 10px; /* 可选：添加圆角 */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
-        .verification-input {
-            width: 48px;
-            height: 48px;
-            text-align: center;
-            font-size: 1.2rem;
+        .tab-btn {
             border: none;
-            border-radius: 6px;
-            transition: all 0.2s ease;
+            background: none;
+            color: var(--text-main);
+            font-size: 16px;
+            font-weight: 600;
+            padding: 0 0 8px;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: color 0.2s ease, border-color 0.2s ease;
         }
 
-        .verification-input:focus {
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        .tab-btn:hover {
+            color: var(--primary);
         }
 
-        /* 提示信息 */
+        .tab-btn.is-active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .register-link {
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .register-link:hover {
+            color: var(--primary-hover);
+        }
+
+        .tab-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-row {
+            min-height: 56px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--input-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 10px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-row:focus-within {
+            border-color: rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .input-row i {
+            font-size: 18px;
+            color: #94a3b8;
+            width: 20px;
+            text-align: center;
+        }
+
+        .input-row input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-main);
+            font-size: 17px;
+        }
+
+        .input-row input::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-row input:focus {
+            outline: none;
+        }
+
+        .pwd-toggle {
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 3px;
+        }
+
+        .pwd-toggle:hover {
+            color: #64748b;
+        }
+
+        .meta-row {
+            margin-top: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 14px;
+        }
+
+        .meta-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+
+        .meta-left input {
+            width: 16px;
+            height: 16px;
+        }
+
+        .text-link {
+            border: none;
+            background: none;
+            padding: 0;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .text-link:hover {
+            color: var(--primary);
+        }
+
+        .login-btn,
+        .code-btn,
+        .small-btn {
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            border-radius: 12px;
+        }
+
+        .login-btn {
+            min-height: 52px;
+            margin-top: 4px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-size: 18px;
+            transition: filter 0.2s ease;
+        }
+
+        .login-btn:hover {
+            filter: brightness(1.05);
+        }
+
+        .code-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .code-btn {
+            min-width: 112px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 14px;
+            padding: 0 12px;
+        }
+
+        .qrcode-box {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            align-items: center;
+            text-align: center;
+        }
+
+        .scan-qr {
+            width: min(220px, 100%);
+            aspect-ratio: 1;
+            border: 9px solid #fff;
+            border-radius: 10px;
+            margin: 4px auto 0;
+            background: #fff;
+            display: grid;
+            grid-template-columns: repeat(21, 1fr);
+            gap: 2px;
+        }
+
+        .qr-cell {
+            background: #fff;
+        }
+
+        .qr-cell.dark {
+            background: #0f172a;
+        }
+
+        .qrcode-box p {
+            margin: 10px 0 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .small-btn {
+            margin-top: 10px;
+            min-height: 38px;
+            padding: 0 16px;
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary);
+        }
+
+        #captcha-element {
+            min-height: 4px;
+        }
+
         .message {
-            margin-top: 1rem;
-            padding: 12px;
-            border-radius: 6px;
-            animation: fadeIn 0.3s ease;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            animation: fade-in 0.25s ease;
         }
 
         .success {
-            background: #f6ffed;
-            color: #52c41a;
-            border-left: 4px solid #52c41a;
+            background: #ecfdf3;
+            color: #166534;
+            border-left: 4px solid #22c55e;
         }
 
         .error {
-            background: #fff1f0;
-            color: #cf1322;
-            border-left: 4px solid #cf1322;
+            background: #fef2f2;
+            color: #b91c1c;
+            border-left: 4px solid #ef4444;
         }
 
-        @keyframes gradientAnimation {
-            0% {
-                background-position: 0 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0 50%;
-            }
+        .info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-left: 4px solid #3b82f6;
         }
 
-        body.light-mode {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #957FEC, #398FFB, #60A033, #4CD1C6);
-            background-size: 200% 200%;
-            animation: gradientAnimation 10s ease infinite;
-            color: #000;
+        .auth-footer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .github-btn {
-            border: none;
-            background: none;
+            border: 1px solid var(--line);
+            background: transparent;
+            border-radius: 999px;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
             cursor: pointer;
-            font-size: 32px;
-            color: #333;
-            transition: color 0.2s ease;
+            position: relative;
+            transition: border-color 0.2s ease, color 0.2s ease, transform 0.18s ease, box-shadow 0.18s ease, background-color 0.2s ease;
+        }
+
+        .github-btn::before,
+        .github-btn::after {
+            position: absolute;
+            left: 50%;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 6px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 5;
+        }
+
+        .github-btn::after {
+            content: attr(data-tooltip);
+            bottom: calc(100% + 12px);
+            padding: 6px 9px;
+            font-size: 12px;
+            white-space: nowrap;
+            border-radius: 7px;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        .github-btn::before {
+            content: "";
+            bottom: calc(100% + 6px);
+            width: 8px;
+            height: 8px;
+            background: var(--tooltip-bg);
+            transform: translate(-50%, 6px) rotate(45deg);
         }
 
         .github-btn:hover {
-            color: #000;
+            border-color: rgba(37, 99, 235, 0.35);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.28);
+        }
+
+        .github-btn:hover::before,
+        .github-btn:hover::after,
+        .github-btn:focus-visible::before,
+        .github-btn:focus-visible::after {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .github-btn:active {
+            transform: translateY(0) scale(0.95);
+            box-shadow: 0 5px 10px rgba(37, 99, 235, 0.22);
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .github-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .legal {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .legal a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .legal a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 520px) {
+            .login-card {
+                padding: 20px 16px 16px;
+                border-radius: 16px;
+            }
+
+            .card-title {
+                font-size: 28px;
+                margin-bottom: 14px;
+            }
+
+            .auth-header {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 14px;
+            }
+
+            .tab-nav {
+                gap: 12px;
+            }
+
+            .tab-btn {
+                font-size: 15px;
+            }
+
+            .input-row {
+                min-height: 50px;
+                padding: 0 12px;
+            }
+
+            .input-row input {
+                font-size: 16px;
+            }
+
+            .login-btn {
+                min-height: 48px;
+                font-size: 16px;
+            }
+
+            .code-row {
+                flex-direction: column;
+            }
+
+            .code-btn {
+                min-height: 42px;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+<body>
+<div class="bg-rainbow" aria-hidden="true"></div>
+<main class="page">
+    <section class="login-card" id="login-card">
+        <h1 class="card-title">登录</h1>
 
-
-<body class="flex items-center justify-center min-h-screen px-4 light-mode">
-
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 transition-all duration-300">
-    <!-- 登录方式切换 -->
-    <div class="flex justify-around mb-6 border-b border-gray-300 dark:border-gray-700">
-        <button class="tab-btn font-bold text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-2"
-                data-tab="pwd">密码登录
-        </button>
-        <button class="tab-btn text-gray-600 dark:text-gray-300 hover:text-blue-500 pb-2" data-tab="code">验证码登录
-        </button>
-        <button class="tab-btn text-gray-600 dark:text-gray-300 hover:text-blue-500 pb-2" data-tab="qrcode">扫码登录
-        </button>
-    </div>
-
-    <!-- 密码登录面板 -->
-    <div id="pwd" class="tab-panel space-y-4">
-        <input type="text" placeholder="手机号/邮箱" id="username" required
-               class="w-full border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
-        <div class="relative">
-            <input type="password" placeholder="密码" id="password" required
-                   class="w-full border rounded px-4 py-2 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
-            <span class="absolute right-3 top-2.5 cursor-pointer" onclick="change_pwd_show()">👁️</span>
+        <div class="auth-header">
+            <div class="tab-nav" role="tablist" aria-label="登录方式">
+                <button class="tab-btn is-active" data-tab="pwd" role="tab" aria-selected="true">账号登录</button>
+                <button class="tab-btn" data-tab="code" role="tab" aria-selected="false">手机号登录</button>
+                <button class="tab-btn" data-tab="qrcode" role="tab" aria-selected="false">扫码登录</button>
+            </div>
+            <a class="register-link" href="#">前往注册 <i class="fa-solid fa-angle-right"></i></a>
         </div>
 
-        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded" onclick="handleLogin(event)"
-                id="btn-login">
-            登录
-        </button>
-    </div>
+        <div id="pwd" class="tab-panel">
+            <label class="input-row">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" placeholder="请输入用户名" id="username" required autocomplete="username"/>
+            </label>
 
-    <!-- 验证码登录面板 -->
-    <div id="code" class="tab-panel hidden space-y-4">
-        <input type="text" placeholder="手机号"
-               class="w-full border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
-        <div class="flex gap-2">
-            <input type="text" placeholder="验证码"
-                   class="flex-1 border rounded px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
-            <button class="bg-blue-500 text-white px-4 py-2 rounded">获取</button>
+            <label class="input-row">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" placeholder="请输入密码" id="password" required autocomplete="current-password"/>
+                <button id="toggle-password" type="button" class="pwd-toggle" onclick="change_pwd_show()" aria-label="显示密码">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </label>
+
+            <div class="meta-row">
+                <label class="meta-left"><input type="checkbox"/>下次自动登录</label>
+                <button class="text-link" type="button" data-tab-jump="qrcode">去扫码登录</button>
+            </div>
+
+            <button class="login-btn" onclick="handleLogin(event)" id="btn-login">登录</button>
+            <div id="captcha-element"></div>
+            <button id="captcha-trigger" type="button" class="hidden" aria-hidden="true" tabindex="-1"></button>
         </div>
-        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">登录</button>
-    </div>
 
-    <!-- 扫码登录面板 -->
-    <div id="qrcode" class="tab-panel hidden text-center">
-    </div>
+        <div id="code" class="tab-panel hidden">
+            <label class="input-row">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <input type="text" placeholder="请输入手机号" autocomplete="tel"/>
+            </label>
+            <div class="code-row">
+                <label class="input-row" style="flex: 1;">
+                    <i class="fa-regular fa-message"></i>
+                    <input type="text" placeholder="请输入验证码"/>
+                </label>
+                <button class="code-btn" type="button">获取验证码</button>
+            </div>
+            <button class="login-btn" type="button">登录</button>
+        </div>
 
-    <div id="messageBox" class="message" style="display: none;"></div>
+        <div id="qrcode" class="tab-panel hidden qrcode-box">
+            <span id="scan-qr" class="scan-qr" aria-hidden="true"></span>
+            <p>请扫码授权登录，完成后将自动进入系统。</p>
+            <button type="button" class="small-btn" data-tab-jump="pwd">返回账号登录</button>
+        </div>
 
-    <!-- 底部链接 -->
-    <div class="flex justify-between mt-6 text-sm text-blue-500 dark:text-blue-400">
-        <a href="#">注册账号</a>
-        <!-- GitHub 登录按钮 -->
-        <button id="github-login" class="github-btn">
-            <i class="fa-brands fa-github"></i>
-        </button>
-        <a href="#">忘记密码</a>
-    </div>
+        <div id="messageBox" class="message" style="display: none;"></div>
 
-    <div class="text-center mt-4 text-xs text-gray-500 dark:text-gray-400">
-        <a href="#">服务协议</a> ｜ <a href="#">隐私政策</a>
-    </div>
-</div>
+        <div class="auth-footer">
+            <a class="text-link" href="#">忘记密码？</a>
+            <button id="github-login" class="github-btn" type="button" aria-label="GitHub 登录" data-tooltip="GitHub 登录">
+                <i class="fa-brands fa-github"></i>
+            </button>
+        </div>
+
+        <div class="legal">
+            <a href="#">服务协议</a> ｜ <a href="#">隐私政策</a>
+        </div>
+    </section>
+</main>
+
 <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
+    document.addEventListener('DOMContentLoaded', () => {
         // ── 自动检测已有 Token ───────────────────────────────────────────────
         const savedToken = localStorage.getItem('eb_token');
         if (savedToken) {
             fetch('/auth/verify', {
-                headers: { 'Authorization': 'Bearer ' + savedToken }
+                headers: {'Authorization': 'Bearer ' + savedToken}
             }).then(r => {
                 if (r.ok) {
                     window.location.href = '/swagger/index.html';
                 } else {
-                    // Token 无效/过期，清除
                     localStorage.removeItem('eb_token');
                 }
             }).catch(() => localStorage.removeItem('eb_token'));
@@ -191,60 +660,313 @@
 
         const tabBtns = document.querySelectorAll('.tab-btn');
         const panels = document.querySelectorAll('.tab-panel');
+        const loginCard = document.getElementById('login-card');
 
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // 清除所有按钮的状态
-                tabBtns.forEach(b => b.classList.remove('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400'));
-
-                // 为当前点击的按钮添加状态
-                btn.classList.add('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400');
-
-                // 隐藏所有面板
-                panels.forEach(panel => {
-                    panel.classList.add('hidden');
-                });
-
-                // 显示当前点击按钮对应的面板
-                const targetPanelId = btn.dataset.tab;
-                const targetPanel = document.getElementById(targetPanelId);
-                if (targetPanel) {
-                    targetPanel.classList.remove('hidden');
-                }
+        function activateTab(targetTab) {
+            tabBtns.forEach((btn) => {
+                const active = btn.dataset.tab === targetTab;
+                btn.classList.toggle('is-active', active);
+                btn.setAttribute('aria-selected', active ? 'true' : 'false');
             });
+
+            panels.forEach((panel) => {
+                panel.classList.toggle('hidden', panel.id !== targetTab);
+            });
+
+            if (loginCard) {
+                loginCard.classList.toggle('is-scan', targetTab === 'qrcode');
+            }
+        }
+
+        tabBtns.forEach((btn) => {
+            btn.addEventListener('click', () => activateTab(btn.dataset.tab));
         });
 
-        // 初始化时显示第一个面板
-        if (panels.length > 0) {
-            panels[0].classList.remove('hidden');
-            tabBtns[0].classList.add('font-bold', 'text-blue-600', 'border-b-2', 'border-blue-600', 'dark:text-blue-400', 'dark:border-blue-400');
-        }
+
+        document.querySelectorAll('[data-tab-jump]').forEach((btn) => {
+            btn.addEventListener('click', () => activateTab(btn.dataset.tabJump || 'pwd'));
+        });
+
+        renderMockQr();
+        activateTab('pwd');
+
+        loadCaptchaConfigFromServer().then((loaded) => {
+            if (loaded) {
+                initEsaCaptcha();
+            }
+        });
     });
 
     // 动态验证码输入处理
-    const inputs = document.querySelectorAll('.verification-input');
     const messageBox = document.getElementById('messageBox');
+    const ESA_CAPTCHA_SCRIPT_SRC = 'https://o.alicdn.com/captcha-frontend/aliyunCaptcha/AliyunCaptcha.js';
+    let captchaInstance = null;
+    let captchaReady = false;
+    let captchaInitialized = false;
+    let captchaScriptLoadedAt = 0;
+    let pendingLoginData = null;
+    let messageTimer = null;
+
+    function hasRealCaptchaValue(value) {
+        return typeof value === 'string' && value.trim().length > 0;
+    }
+
+    function isEsaCaptchaEnabled() {
+        const cfg = window.EB_ESA_CAPTCHA || {};
+        return hasRealCaptchaValue(cfg.prefix) && hasRealCaptchaValue(cfg.sceneId);
+    }
+
+    function renderMockQr() {
+        const qr = document.getElementById('scan-qr');
+        if (!qr || qr.childElementCount > 0) {
+            return;
+        }
+
+        const size = 21;
+        const finderSize = 7;
+
+        function inFinderArea(row, col, top, left) {
+            return row >= top && row < top + finderSize && col >= left && col < left + finderSize;
+        }
+
+        function finderCell(row, col, top, left) {
+            const r = row - top;
+            const c = col - left;
+            return r === 0 || r === finderSize - 1 || c === 0 || c === finderSize - 1 || (r >= 2 && r <= 4 && c >= 2 && c <= 4);
+        }
+
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                const cell = document.createElement('span');
+                cell.className = 'qr-cell';
+
+                const topLeft = inFinderArea(row, col, 0, 0);
+                const topRight = inFinderArea(row, col, 0, size - finderSize);
+                const bottomLeft = inFinderArea(row, col, size - finderSize, 0);
+
+                let dark = false;
+                if (topLeft) {
+                    dark = finderCell(row, col, 0, 0);
+                } else if (topRight) {
+                    dark = finderCell(row, col, 0, size - finderSize);
+                } else if (bottomLeft) {
+                    dark = finderCell(row, col, size - finderSize, 0);
+                } else {
+                    dark = ((row * 17 + col * 29 + row * col) % 11) < 5;
+                }
+
+                if (dark) {
+                    cell.classList.add('dark');
+                }
+                qr.appendChild(cell);
+            }
+        }
+    }
+
+    async function loadCaptchaConfigFromServer() {
+        try {
+            const response = await fetch('/auth/captcha/config', {
+                method: 'GET',
+                cache: 'no-store',
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const payload = await response.json();
+            const remoteCfg = payload && payload.data ? payload.data : null;
+            if (!remoteCfg || !hasRealCaptchaValue(remoteCfg.prefix) || !hasRealCaptchaValue(remoteCfg.sceneId)) {
+                return false;
+            }
+
+            window.EB_ESA_CAPTCHA = {
+                region: remoteCfg.region || 'cn',
+                prefix: remoteCfg.prefix,
+                sceneId: remoteCfg.sceneId
+            };
+            window.AliyunCaptchaConfig = {
+                region: window.EB_ESA_CAPTCHA.region,
+                prefix: window.EB_ESA_CAPTCHA.prefix
+            };
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function loadAliyunCaptchaScript() {
+        return new Promise((resolve, reject) => {
+            if (window.initAliyunCaptcha) {
+                resolve();
+                return;
+            }
+
+            const exist = document.querySelector(`script[src="${ESA_CAPTCHA_SCRIPT_SRC}"]`);
+            if (exist) {
+                exist.addEventListener('load', resolve, {once: true});
+                exist.addEventListener('error', () => reject(new Error('验证码脚本加载失败')), {once: true});
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = ESA_CAPTCHA_SCRIPT_SRC;
+            script.async = true;
+            script.onload = () => {
+                captchaScriptLoadedAt = Date.now();
+                resolve();
+            };
+            script.onerror = () => reject(new Error('验证码脚本加载失败'));
+            document.head.appendChild(script);
+        });
+    }
+
+    function initEsaCaptcha() {
+        if (!isEsaCaptchaEnabled() || captchaInitialized) {
+            return;
+        }
+
+        captchaInitialized = true;
+        loadAliyunCaptchaScript()
+            .then(() => {
+                if (typeof window.initAliyunCaptcha !== 'function') {
+                    throw new Error('initAliyunCaptcha 不可用');
+                }
+
+                const cfg = window.EB_ESA_CAPTCHA;
+                window.initAliyunCaptcha({
+                    SceneId: cfg.sceneId,
+                    mode: 'popup',
+                    element: '#captcha-element',
+                    button: '#captcha-trigger',
+                    success: async function (captchaVerifyParam) {
+                        if (!pendingLoginData) {
+                            showMessage('请先输入账号密码', 'error');
+                            return;
+                        }
+
+                        const loginData = pendingLoginData;
+                        pendingLoginData = null;
+                        try {
+                            await submitLogin(loginData, captchaVerifyParam);
+                        } catch (error) {
+                            showMessage('登录失败：' + error.message, 'error');
+                        } finally {
+                            if (captchaInstance && typeof captchaInstance.refresh === 'function') {
+                                captchaInstance.refresh();
+                            }
+                        }
+                    },
+                    fail: function () {
+                        showMessage('验证码校验未通过，请重试', 'error');
+                    },
+                    getInstance: function (instance) {
+                        captchaInstance = instance;
+                        captchaReady = true;
+                    },
+                    server: ['captcha-esa-open.aliyuncs.com', 'captcha-esa-open-b.aliyuncs.com'],
+                    slideStyle: {
+                        width: 360,
+                        height: 40
+                    }
+                });
+            })
+            .catch((error) => {
+                captchaInitialized = false;
+                showMessage(error.message || '验证码初始化失败', 'error');
+            });
+    }
+
+    function triggerEsaCaptcha() {
+        if (!captchaReady || !captchaInstance) {
+            showMessage('验证码加载中，请稍后重试', 'error');
+            return false;
+        }
+
+        // 官方建议验证码脚本加载和业务验证请求间隔大于 2 秒。
+        if (captchaScriptLoadedAt > 0 && Date.now() - captchaScriptLoadedAt < 2000) {
+            showMessage('验证码初始化中，请 2 秒后重试', 'error');
+            return false;
+        }
+
+        if (typeof captchaInstance.show === 'function') {
+            captchaInstance.show();
+            return true;
+        }
+
+        const trigger = document.getElementById('captcha-trigger');
+        if (trigger) {
+            trigger.click();
+            return true;
+        }
+
+        showMessage('验证码触发失败', 'error');
+        return false;
+    }
 
     function showMessage(message, type) {
         const msgBox = messageBox;
-        let timer;
         msgBox.className = 'message';
 
         if (type === 'success') {
-            msgBox.classList.add('success')
+            msgBox.classList.add('success');
         } else if (type === 'error') {
-            msgBox.classList.add("error");
+            msgBox.classList.add('error');
         } else {
-            msgBox.classList.add("info");
+            msgBox.classList.add('info');
         }
 
         msgBox.textContent = message;
         msgBox.style.display = 'block';
 
-        clearTimeout(timer);
-        timer = setTimeout(() => {
+        clearTimeout(messageTimer);
+        messageTimer = setTimeout(() => {
             msgBox.style.display = 'none';
         }, 3000);
+    }
+
+    async function submitLogin(loginData, captchaVerifyParam) {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (captchaVerifyParam) {
+            headers['captcha-verify-param'] = captchaVerifyParam;
+        }
+
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(loginData)
+        });
+
+        const verifyCode = response.headers.get('X-Captcha-Verify-Code') || response.headers.get('x-captcha-verify-code');
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (_) {
+            data = {};
+        }
+
+        if (captchaVerifyParam && verifyCode && verifyCode !== 'T001') {
+            throw new Error(`验证码验证失败（${verifyCode}）`);
+        }
+
+        if (!response.ok || data.code !== 200) {
+            throw new Error(`${data.message || '未知错误'}`);
+        }
+
+        const token = data.data && data.data.token;
+        if (token) {
+            localStorage.setItem('eb_token', token);
+            // 记录过期时间（7天），用于前端快速判断
+            localStorage.setItem('eb_token_exp', Date.now() + 7 * 24 * 60 * 60 * 1000);
+        }
+        showMessage('登录成功，即将跳转...', 'success');
+        setTimeout(() => {
+            window.location.href = '/swagger/index.html';
+        }, 1000);
     }
 
     // 登录表单处理
@@ -260,34 +982,26 @@
 
         // 前端 SHA-256 防止明文传输；后端会对收到的 hash 再次 SHA-256 后存储/比对
         const pwHash = await sha256(password);
-        const loginData = { username, password: pwHash };
-        fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(loginData),
-        }).then(response => {
-            return response.json();
-        }).then(data => {
-            if (data.code !== 200) {
-                throw new Error(`${data.message || '未知错误'}`);
-            }
-            const token = data.data && data.data.token;
-            if (token) {
-                localStorage.setItem('eb_token', token);
-                // 记录过期时间（7天），用于前端快速判断
-                localStorage.setItem('eb_token_exp', Date.now() + 7 * 24 * 60 * 60 * 1000);
-            }
-            showMessage('登录成功，即将跳转...', 'success');
-            setTimeout(() => {
-                window.location.href = '/swagger/index.html';
-            }, 1000);
-        }).catch(error => {
-            showMessage('登录失败：' + error.message, 'error');
-        });
-    }
+        const loginData = {username, password: pwHash};
 
+        try {
+            if (!isEsaCaptchaEnabled()) {
+                const loaded = await loadCaptchaConfigFromServer();
+                if (!loaded) {
+                    showMessage('验证码配置不可用，请联系管理员', 'error');
+                    return;
+                }
+                initEsaCaptcha();
+            }
+
+            pendingLoginData = loginData;
+            if (!triggerEsaCaptcha()) {
+                pendingLoginData = null;
+            }
+        } catch (error) {
+            showMessage('登录失败：' + error.message, 'error');
+        }
+    }
 
     // SHA-256 工具函数（Web Crypto API，无需第三方库）
     async function sha256(message) {
@@ -298,17 +1012,35 @@
     }
 
     function change_pwd_show() {
-        document.getElementById('password').type = 'text';
+        const pwdInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('toggle-password');
+        if (!pwdInput) {
+            return;
+        }
+
+        const toPassword = pwdInput.type === 'text';
+        pwdInput.type = toPassword ? 'password' : 'text';
+
+        if (toggleBtn) {
+            const icon = toggleBtn.querySelector('i');
+            toggleBtn.setAttribute('aria-label', toPassword ? '显示密码' : '隐藏密码');
+            if (icon) {
+                icon.classList.toggle('fa-eye', toPassword);
+                icon.classList.toggle('fa-eye-slash', !toPassword);
+            }
+        }
     }
 
-
-    document.getElementById("github-login").addEventListener("click", () => {
-        location.href = "/login/github";
+    document.getElementById('github-login').addEventListener('click', () => {
+        location.href = '/login/github';
     });
 
     document.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
-            document.querySelector('#btn-login').click();
+            const pwdPanel = document.getElementById('pwd');
+            if (pwdPanel && !pwdPanel.classList.contains('hidden')) {
+                document.querySelector('#btn-login').click();
+            }
         }
     });
 

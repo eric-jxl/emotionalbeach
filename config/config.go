@@ -9,15 +9,53 @@ import (
 )
 
 type ServerConfig struct {
-	Port               int    `mapstructure:"port"`
-	ClientID           string `mapstructure:"clientID"`
-	ClientSecret       string `mapstructure:"clientSecret"`
-	JWTSecret          string `mapstructure:"jwtSecret"`
-	EnableRedis        bool   `mapstructure:"enableRedis,default=false"`
-	ReadTimeoutSec     int    `mapstructure:"readTimeoutSec"`
-	WriteTimeoutSec    int    `mapstructure:"writeTimeoutSec"`
-	IdleTimeoutSec     int    `mapstructure:"idleTimeoutSec"`
-	ShutdownTimeoutSec int    `mapstructure:"shutdownTimeoutSec"`
+	Port         int    `mapstructure:"port"`
+	ClientID     string `mapstructure:"clientID"`
+	ClientSecret string `mapstructure:"clientSecret"`
+	JWTSecret    string `mapstructure:"jwtSecret"`
+	// ESA captcha runtime params are served by backend endpoint to avoid hardcoding in static HTML.
+	ESACaptchaRegion  string `mapstructure:"esaCaptchaRegion"`
+	ESACaptchaPrefix  string `mapstructure:"esaCaptchaPrefix"`
+	ESACaptchaSceneID string `mapstructure:"esaCaptchaSceneID"`
+	// Rate-limit policy for all protected /v1 routes.
+	RateLimitWindowSec int  `mapstructure:"rateLimitWindowSec"`
+	RateLimitMaxReq    int  `mapstructure:"rateLimitMaxReq"`
+	EnableRedis        bool `mapstructure:"enableRedis,default=false"`
+	ReadTimeoutSec     int  `mapstructure:"readTimeoutSec"`
+	WriteTimeoutSec    int  `mapstructure:"writeTimeoutSec"`
+	IdleTimeoutSec     int  `mapstructure:"idleTimeoutSec"`
+	ShutdownTimeoutSec int  `mapstructure:"shutdownTimeoutSec"`
+}
+
+func (s ServerConfig) ReadTimeout() time.Duration {
+	return time.Duration(s.ReadTimeoutSec) * time.Second
+}
+
+func (s ServerConfig) WriteTimeout() time.Duration {
+	return time.Duration(s.WriteTimeoutSec) * time.Second
+}
+
+func (s ServerConfig) IdleTimeout() time.Duration {
+	return time.Duration(s.IdleTimeoutSec) * time.Second
+}
+
+func (s ServerConfig) ShutdownTimeout() time.Duration {
+	return time.Duration(s.ShutdownTimeoutSec) * time.Second
+}
+
+func (s ServerConfig) RateLimitEvery() time.Duration {
+	return time.Duration(s.RateLimitWindowSec) * time.Second
+}
+
+func (s ServerConfig) RateLimitBurst() int {
+	return s.RateLimitMaxReq
+}
+
+func (s ServerConfig) CaptchaRegion() string {
+	if s.ESACaptchaRegion == "" {
+		return "cn"
+	}
+	return s.ESACaptchaRegion
 }
 
 type MailConfig struct {
@@ -79,25 +117,47 @@ type Config struct {
 	Redis           RedisConfig                       `mapstructure:"redis"`
 }
 
+var defaultValues = map[string]any{
+	// Security- and availability-related defaults live in one place for easier review.
+	"server.readTimeoutSec":     15,
+	"server.writeTimeoutSec":    30,
+	"server.idleTimeoutSec":     60,
+	"server.shutdownTimeoutSec": 10,
+	"server.esaCaptchaRegion":   "cn",
+	"server.rateLimitWindowSec": 10,
+	"server.rateLimitMaxReq":    5,
+	"log.level":                 "info",
+	"log.maxSizeMB":             100,
+	"log.maxBackups":            5,
+	"log.maxAgeDays":            30,
+	"log.compress":              true,
+}
+
+func applyDefaults(v *viper.Viper) {
+	for key, value := range defaultValues {
+		v.SetDefault(key, value)
+	}
+}
+
+// normalizeCompatKeys preserves backward compatibility for renamed config keys.
+func normalizeCompatKeys(v *viper.Viper) {
+	if !v.IsSet("redis.min_idle_conns") && v.IsSet("redis.min_idle_connects") {
+		v.Set("redis.min_idle_conns", v.Get("redis.min_idle_connects"))
+	}
+}
+
 func LoadConfig() (cfg *Config, err error) {
 	v := viper.New()
 	v.AddConfigPath("config")
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
-	v.SetDefault("server.readTimeoutSec", 15)
-	v.SetDefault("server.writeTimeoutSec", 30)
-	v.SetDefault("server.idleTimeoutSec", 60)
-	v.SetDefault("server.shutdownTimeoutSec", 10)
-	v.SetDefault("log.level", "info")
-	v.SetDefault("log.maxSizeMB", 100)
-	v.SetDefault("log.maxBackups", 5)
-	v.SetDefault("log.maxAgeDays", 30)
-	v.SetDefault("log.compress", true)
+	applyDefaults(v)
 	if err = v.ReadInConfig(); err != nil {
 		return nil, err
 	}
-	v.AutomaticEnv() // 支持环境变量覆盖
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv() // 支持环境变量覆盖
+	normalizeCompatKeys(v)
 	if err = v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}

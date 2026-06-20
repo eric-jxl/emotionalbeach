@@ -37,3 +37,4 @@ CHANGELOG
 .gitlab-ci.yml
 inspection.sh
 .idea
+.codegraph

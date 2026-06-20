@@ -58,7 +58,8 @@ func (a *App) Run() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	zap.S().Infof("⏳ received signal %s, starting graceful shutdown…", <-quit)
 
-	timeout := time.Duration(a.cfg.Server.ShutdownTimeoutSec) * time.Second
+	// Use centralized timeout conversion to keep shutdown policy consistent with HTTP server config.
+	timeout := a.cfg.Server.ShutdownTimeout()
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
