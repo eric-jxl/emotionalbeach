@@ -29,7 +29,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "登录注册"
+                    "注册登陆"
                 ],
                 "summary": "Get captcha public config",
                 "responses": {

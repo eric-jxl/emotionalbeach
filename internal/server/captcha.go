@@ -12,7 +12,7 @@ import (
 // Requirement: captcha identity/scene parameters are managed in server config and fetched at runtime.
 // @Summary Get captcha public config
 // @Description Returns runtime captcha settings for frontend login integration.
-// @Tags 登录注册
+// @Tags 注册登陆
 // @Produce json
 // @Success 200 {object} map[string]interface{} "captcha config"
 // @Failure 404 {object} map[string]interface{} "captcha not configured"
