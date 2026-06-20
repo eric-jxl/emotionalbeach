@@ -91,6 +91,30 @@ info:
   title: 情感沙滩 API
   version: "1.0"
 paths:
+  /auth/captcha/config:
+    get:
+      description: Returns runtime captcha settings for frontend login integration.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: captcha config
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: captcha not configured
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: captcha config unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get captcha public config
+      tags:
+      - auth
   /auth/refresh:
     post:
       produces:

@@ -15,6 +15,41 @@
     },
     "basePath": "/",
     "paths": {
+        "/auth/captcha/config": {
+            "get": {
+                "description": "Returns runtime captcha settings for frontend login integration.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get captcha public config",
+                "responses": {
+                    "200": {
+                        "description": "captcha config",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "captcha not configured",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "captcha config unavailable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "security": [
