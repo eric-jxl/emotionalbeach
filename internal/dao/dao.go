@@ -27,6 +27,7 @@ type Dao interface {
 	FindUserByName(name string) (*models.UserBasic, error)
 	FindUserByPhone(phone string) (*models.UserBasic, error)
 	FindUserByEmail(email string) (*models.UserBasic, error)
+	FindUserByGitHubID(githubID int64) (*models.UserBasic, error)
 	UserNameExists(name string) bool
 	CreateUser(user models.UserBasic) (*models.UserBasic, error)
 	UpdateUser(user models.UserBasic) (*models.UserBasic, error)

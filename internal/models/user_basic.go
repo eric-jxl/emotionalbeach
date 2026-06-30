@@ -22,9 +22,10 @@ type UserBasic struct {
 	Password      string     `gorm:"column:password;comment:密码" json:"-"`
 	Role          string     `gorm:"column:role;default:user;type:varchar(128);size:128;comment:superadmin表示超级管理员, admin表示管理员,user表示普通用户" json:"role"`
 	Avatar        string     `gorm:"comment:头像" json:"avatar"`
-	Gender        string     `gorm:"column:gender;default:male;type:varchar(6); comment:male表示男，female表示女" json:"gender"`              // gorm为数据库字段约束
+	Gender        string     `gorm:"column:gender;default:male;type:varchar(6); comment:male表示男，female表示女" json:"gender"`                 // gorm为数据库字段约束
 	Phone         string     `gorm:"type:varchar(64);index; unique;comment:手机号;not null" valid:"matches(^1[3-9]{1}\\d{9}$)" json:"phone"` //valid为条件约束
 	Email         string     `gorm:"size:255;comment:Email" json:"email"`
+	GitHubID      int64      `gorm:"column:github_id;index;comment:GitHub 用户 ID, 0 表示非 GitHub 用户" json:"-"`
 	Identity      string     `gorm:"column:identity;size:128;comment:密钥" json:"-"`
 	ClientIp      string     `gorm:"comment:ip地址"  json:"-"`
 	Salt          string     `gorm:"column:salt;comment:密码加盐" json:"-"`

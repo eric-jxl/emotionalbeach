@@ -47,6 +47,14 @@ func (d *dao) FindUserByEmail(email string) (*models.UserBasic, error) {
 	return &u, nil
 }
 
+func (d *dao) FindUserByGitHubID(githubID int64) (*models.UserBasic, error) {
+	var u models.UserBasic
+	if tx := d.db.Where("github_id = ?", githubID).First(&u); tx.RowsAffected == 0 {
+		return nil, errors.New("user not found")
+	}
+	return &u, nil
+}
+
 func (d *dao) UserNameExists(name string) bool {
 	var u models.UserBasic
 	return d.db.Where("name = ?", name).First(&u).RowsAffected == 1
@@ -98,4 +106,3 @@ func (d *dao) UpdatePassword(id uint, hashed, salt string) error {
 	}
 	return nil
 }
-
