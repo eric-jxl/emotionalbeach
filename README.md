@@ -17,8 +17,9 @@
 | ✅ 用户认证系统             | 用户名/密码登录 + GitHub OAuth 一键登录                                       |
 | ✅ 好友关系管理             | 添加好友（ID / 昵称）、获取好友列表                                               |
 | ✅ JWT Token 认证       | 7 天有效期，Bearer 格式，配置注入密钥                                            |
-| ✅ 内嵌登录页              | 密码 / 验证码 / 扫码三种登录方式 UI，登录后自动跳转 Swagger                             |
+| ✅ 内嵌登录页              | 密码 / 手机号 / 扫码三种登录方式 UI，登录后自动跳转 Swagger                             |
 | ✅ Swagger 自动注入 Token | 登录后自动写入 `localStorage`，Swagger UI 打开即完成 ApiKeyAuth 授权              |
+| ✅ ESA 验证码           | 阿里云 ESA 验证码（滑块），通过后端 `/auth/captcha/config` 运行时下发参数                            |
 | ✅ 邮件通知服务             | 多收件人、HTML 内容，配置驱动（无环境变量依赖）                                         |
 | ✅ Redis 缓存           | 启动时预热，可通过配置开关                                                      |
 | ✅ IP 限流保护            | 令牌桶算法，防止滥用                                                         |
@@ -48,7 +49,8 @@ main.go
 ```go
 // internal/di/wire.go
 func InitializeApp(cfg *config.Config) (*App, func (), error) {
-panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, NewApp))
+	wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, NewApp)
+	return nil, nil, nil
 }
 ```
 
@@ -56,11 +58,11 @@ panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, New
 
 所有接口统一使用 `internal/common` 包中的**三个**函数封装返回：
 
-| 函数                                | 场景                   | HTTP 状态  | `code` 字段  |
-|-----------------------------------|----------------------|----------|------------|
-| `common.Success(c, data)`         | 请求成功                 | 200      | `0`        |
+| 函数                                | 场景                   | HTTP 状态  | `code` 字段        |
+|-----------------------------------|----------------------|----------|------------------|
+| `common.Success(c, data)`         | 请求成功                 | 200      | `200`            |
 | `common.Fail(c, httpStatus, msg)` | 业务失败（参数错误、鉴权失败等 4xx） | 传入值（4xx） | 同 HTTP 状态码 |
-| `common.ServerError(c, msg)`      | 服务内部错误（5xx）          | 500      | `500`      |
+| `common.ServerError(c, msg)`      | 服务内部错误（5xx）          | 500      | `500`            |
 
 ```json
 // ✅ 成功 — common.Success(c, data)
@@ -91,6 +93,7 @@ panic(wire.Build(infra.Provider, dao.Provider, service.Provider, server.New, New
 emotionalbeach/
 ├── main.go                          # 极简入口：加载配置 → Wire → App.Run()
 ├── config/config.go + config.yaml   # 配置结构体 + 配置文件
+├── cmd/                             # 编译产物输出目录（make all → cmd/emotionalBeach）
 ├── internal/
 │   ├── di/
 │   │   ├── wire.go                  # Wire 注入器（wireinject build tag）
@@ -120,7 +123,13 @@ emotionalbeach/
 │   │   ├── github.go                # GitHub Handler 函数
 │   │   ├── health.go                # 健康检查 Handler 函数
 │   │   └── webhook.go               # Webhook/Email Handler 函数
-│   ├── middleware/                  # 中间件（JWT、限流、日志、Prometheus）
+│   ├── middleware/                  # 中间件
+│   │   ├── jwt.go                   # JWT 生成/校验/刷新/内存缓存
+│   │   ├── rateLimit.go             # IP 令牌桶限流
+│   │   ├── request_id.go            # 请求 ID 注入/响应头传播
+│   │   ├── logger.go                # Zap HTTP 访问日志
+│   │   ├── metrics.go               # Prometheus HTTP 指标 + panic 计数
+│   │   └── assets_cache.go          # 静态资源缓存头
 │   ├── models/                      # GORM 数据模型（UserBasic、Relation）
 │   ├── common/                      # 纯函数工具包
 │   │   ├── md5.go                   # MD5、密码加盐、手机号校验
@@ -171,7 +180,10 @@ server:
   jwtSecret: "your-secret-key"
   clientID: "github-client-id"
   clientSecret: "github-client-secret"
-  enableRedis: true
+  esaCaptchaRegion: "cn"            # 阿里云 ESA 验证码区域
+  esaCaptchaPrefix: "esa-xxx"      # ESA 验证码 prefix（从控制台获取）
+  esaCaptchaSceneID: "f84xxxxx"    # ESA 验证码场景 ID
+  enableRedis: false                # 设为 true 启用 Redis
   readTimeoutSec: 15
   writeTimeoutSec: 30
   idleTimeoutSec: 60
@@ -205,7 +217,7 @@ redis:
   password: "your-redis-password"
   db: 0
   pool_size: 20
-  min_idle_connects: 5
+  min_idle_conns: 5
 
 mail:
   smtpUser: "xxx@qq.com"
@@ -247,11 +259,14 @@ swag init -o ./docs -g main.go
 
 服务内置了一个完整的登录页面（`/`），支持三种登录方式：
 
-| 方式    | 说明                   |
-|-------|----------------------|
-| 密码登录  | 输入手机号 / 邮箱 + 密码，点击登录 |
-| 验证码登录 | 手机号 + 短信验证码（待接入短信服务） |
-| 扫码登录  | 预留入口（待实现）            |
+| 方式     | 说明                         |
+|--------|----------------------------|
+| 账号登录   | 用户名/手机号/邮箱 + 密码，ESA 滑块验证码校验 |
+| 手机号登录 | 手机号 + 短信验证码（待接入短信服务）       |
+| 扫码登录   | 预留入口（待实现）                  |
+
+> [!NOTE]
+> 密码登录会触发阿里云 ESA 滑块验证码，前端从 `/auth/captcha/config` 获取运行时参数；若验证码未配置则登录不可用。
 
 登录成功后的完整流程：
 
@@ -276,6 +291,7 @@ swag init -o ./docs -g main.go
 | GET    | `/callback`          | ❌  | GitHub OAuth 回调          |
 | GET    | `/auth/verify`       | ❌  | 校验 Token 有效性（Header 或 query） |
 | POST   | `/auth/refresh`      | ❌  | 刷新 Token（旧 Token 未过期时）  |
+| GET    | `/auth/captcha/config` | ❌  | 获取 ESA 验证码运行时参数 |
 | GET    | `/v1/user/list`      | ✅  | 获取所有用户                   |
 | GET    | `/v1/user/condition` | ✅  | 条件查询（id / phone / email） |
 | POST   | `/v1/user/update`    | ✅  | 更新用户信息                   |
@@ -329,19 +345,20 @@ make k8s-history
 make k8s-delete
 ```
 
-清单包含：Namespace、Deployment、Service、Ingress、HPA、PDB、ConfigMap、Secret、PostgreSQL StatefulSet。
+清���包含：Namespace、Deployment、Service、Ingress、HPA、PDB、ConfigMap、Secret、PostgreSQL StatefulSet。
 
 ---
 
 ## 🔐 安全特性
 
-| 特性     | 实现方式                                   |
-|--------|----------------------------------------|
-| 密码加密   | MD5 + 随机盐值（`common.SaltPassWord`）      |
-| JWT 认证 | HS256，7 天有效期，密钥从配置注入                   |
-| IP 限流  | 令牌桶，10 秒内最多 5 次（可配置）                   |
-| 结构化日志  | Zap + Lumberjack 滚动，控制台彩色 + JSON 文件双输出 |
-| 请求追踪   | 每个请求自动注入 `X-Request-Id`                |
+| 特性       | 实现方式                                     |
+|----------|----------------------------------------|
+| 密码加密     | **SHA256** 为主（`common.Sha256Password`）；历史 MD5+随机盐值自动迁移至 SHA256 |
+| JWT 认证   | HS256，7 天有效期，密钥从配置注入；Token 解析结果内存缓存，密钥轮换自动刷缓存 |
+| IP 限流    | 令牌桶，10 秒内最多 5 次（可配置）                   |
+| 结构化日志    | Zap + Lumberjack 滚动，控制台彩色 + JSON 文件双输出 |
+| 请求追踪     | 每个请求自动注入 `X-Request-Id`                |
+| ESA 验证码 | 阿里云 ESA 滑块验证码，参数从配置经 `/auth/captcha/config` 下发前端 |
 
 ---
 
